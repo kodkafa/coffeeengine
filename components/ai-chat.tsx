@@ -2,17 +2,17 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
-import { useChat } from "@ai-sdk/react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { VerificationCard } from "./verification-card"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Spinner } from "@/components/ui/spinner"
 import type { VerificationResult } from "@/lib/api-client"
-import { Send, AlertTriangle, CheckCircle2 } from "lucide-react"
+import { useChat } from "@ai-sdk/react"
+import { AlertTriangle, CheckCircle2, Send } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { VerificationCard } from "./verification-card"
 
 interface AIChatProps {
   apiKey?: string
