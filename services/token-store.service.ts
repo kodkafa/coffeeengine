@@ -3,8 +3,16 @@
 import { kv } from "@/lib/kv"
 import { config } from "@/config"
 import type { NormalizedEvent } from "@/types"
+import { NormalizedEventSchema } from "@/lib/schemas"
 
-export class TokenStoreService {
+export interface ITokenStore {
+  store(event: NormalizedEvent): Promise<void>
+  retrieve(providerId: string, externalId: string): Promise<NormalizedEvent | null>
+  exists(providerId: string, externalId: string): Promise<boolean>
+  delete(providerId: string, externalId: string): Promise<void>
+}
+
+export class TokenStoreService implements ITokenStore {
   private static instance: TokenStoreService
 
   private constructor() {}
@@ -21,10 +29,12 @@ export class TokenStoreService {
   }
 
   async store(event: NormalizedEvent): Promise<void> {
-    const key = this.getKey(event.providerId, event.externalId)
+    const validated = NormalizedEventSchema.parse(event)
+
+    const key = this.getKey(validated.providerId, validated.externalId)
     const ttl = config.tokenTtlSeconds
 
-    await kv.set(key, JSON.stringify(event), {
+    await kv.set(key, JSON.stringify(validated), {
       ex: ttl,
     })
 
@@ -48,15 +58,18 @@ export class TokenStoreService {
       }
 
       if (typeof data === "object") {
-        console.log(`[TokenStore] Data is already an object, returning directly`)
-        return data as NormalizedEvent
+        console.log(`[TokenStore] Data is already an object, validating with schema`)
+        return NormalizedEventSchema.parse(data) as NormalizedEvent
       }
 
       console.log(`[TokenStore] Parsing JSON data`)
-      return JSON.parse(data) as NormalizedEvent
+      const parsed = JSON.parse(data)
+      return NormalizedEventSchema.parse(parsed) as NormalizedEvent
     } catch (error) {
       console.error(`[TokenStore] Error retrieving/parsing data for key ${key}:`, error)
-      throw error
+      throw new Error(
+        `[TokenStore] Data validation failed for ${key}: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
 

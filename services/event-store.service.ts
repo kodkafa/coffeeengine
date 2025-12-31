@@ -2,8 +2,22 @@
 
 import { kv } from "@/lib/kv"
 import type { NormalizedEvent } from "@/types"
+import { NormalizedEventSchema } from "@/lib/schemas"
 
-export class EventStoreService {
+export interface IEventStore {
+  storeEvent(event: NormalizedEvent): Promise<void>
+  getEvent(providerId: string, externalId: string): Promise<NormalizedEvent | null>
+  getProviderEvents(providerId: string, limit?: number, offset?: number): Promise<NormalizedEvent[]>
+  getEventsByType(providerId: string, eventType: string, limit?: number, offset?: number): Promise<NormalizedEvent[]>
+  getUserEvents(email: string, limit?: number, offset?: number): Promise<NormalizedEvent[]>
+  getEventStats(providerId: string): Promise<{
+    totalEvents: number
+    eventTypeBreakdown: Record<string, number>
+    totalRevenue: number
+  }>
+}
+
+export class EventStoreService implements IEventStore {
   private static instance: EventStoreService
 
   private constructor() {}
@@ -17,28 +31,30 @@ export class EventStoreService {
 
   // Store event with multiple index keys for flexible querying
   async storeEvent(event: NormalizedEvent): Promise<void> {
+    const validated = NormalizedEventSchema.parse(event)
+
     const timestamp = Date.now()
-    const eventKey = `event:${event.providerId}:${event.externalId}`
-    const eventWithTimestamp = { ...event, storedAt: timestamp }
+    const eventKey = `event:${validated.providerId}:${validated.externalId}`
+    const eventWithTimestamp = { ...validated, storedAt: timestamp }
 
     // 1. Store the full event data
     await kv.set(eventKey, JSON.stringify(eventWithTimestamp))
 
     // 2. Add to provider-specific event list (for pagination)
-    const providerListKey = `events:${event.providerId}`
+    const providerListKey = `events:${validated.providerId}`
     await kv.zadd(providerListKey, { score: timestamp, member: eventKey })
 
     // 3. Add to event-type-specific list
-    const eventTypeListKey = `events:${event.providerId}:${event.eventType}`
+    const eventTypeListKey = `events:${validated.providerId}:${validated.eventType}`
     await kv.zadd(eventTypeListKey, { score: timestamp, member: eventKey })
 
     // 4. Add to user-specific list (if email exists)
-    if (event.payerEmail) {
-      const userListKey = `events:user:${event.payerEmail}`
+    if (validated.payerEmail) {
+      const userListKey = `events:user:${validated.payerEmail}`
       await kv.zadd(userListKey, { score: timestamp, member: eventKey })
     }
 
-    console.log(`[EventStore] Stored event: ${eventKey} of type ${event.eventType}`)
+    console.log(`[EventStore] Stored event: ${eventKey} of type ${validated.eventType}`)
   }
 
   // Retrieve a specific event
@@ -117,7 +133,13 @@ export class EventStoreService {
     for (const key of keys) {
       const data = await kv.get<string>(key)
       if (data) {
-        events.push(JSON.parse(data) as NormalizedEvent)
+        try {
+          const parsed = typeof data === "object" ? data : JSON.parse(data)
+          events.push(NormalizedEventSchema.parse(parsed) as NormalizedEvent)
+        } catch (error) {
+          console.error(`[EventStore] Data validation failed for key ${key}:`, error)
+          // Skip corrupted events instead of crashing
+        }
       }
     }
 

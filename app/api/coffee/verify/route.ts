@@ -1,17 +1,11 @@
-// Verification API endpoint
+// Verification API endpoint with auth middleware
 
 import { type NextRequest, NextResponse } from "next/server"
 import { verificationService } from "@/services/verification.service"
-import { config } from "@/config"
+import { withAuth } from "@/lib/auth-middleware"
 
-export async function POST(request: NextRequest) {
+async function handler(request: NextRequest) {
   try {
-    // Check API key
-    const apiKey = request.headers.get("x-coffee-api-key")
-    if (!apiKey || apiKey !== config.coffeeApiKey) {
-      return NextResponse.json({ error: "Unauthorized", message: "Invalid or missing API key" }, { status: 401 })
-    }
-
     // Parse request body
     const body = await request.json()
     const { transactionId, providerId = "bmc", contextId } = body
@@ -39,3 +33,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Internal Server Error", message: "Verification failed" }, { status: 500 })
   }
 }
+
+export const POST = withAuth(handler)
