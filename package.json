@@ -2,6 +2,7 @@
   "name": "coffee-engine",
   "version": "0.1.0",
   "private": true,
+  "extensionPack": "bun@latest",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
@@ -10,6 +11,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.5",
     "@hookform/resolvers": "^3.10.0",
     "@modelcontextprotocol/sdk": "^1.11.0",
     "@radix-ui/react-accordion": "1.2.2",
