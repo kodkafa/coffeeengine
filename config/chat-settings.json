@@ -1,0 +1,72 @@
+{
+  "agent": {
+    "name": "Coffee Engine Mentor",
+    "role": "Setup Assistant",
+    "systemPrompt": "You are the setup assistant. Help users clone and monetize their AI projects."
+  },
+  "session": {
+    "durationMinutes": 45
+  },
+  "messages": {
+    "welcome": [
+      "👋 Hi! I can help you setup your monetization.",
+      "👋 Ready to turn your code into cash?"
+    ],
+    "paywall_trigger": [
+      "☕ I need a coffee to answer that custom request.",
+      "🔒 Unlock full AI power with a coffee."
+    ],
+    "ask_for_tx": [
+      "📝 Please paste your Transaction ID.",
+      "🙏 Thanks! What is your TX ID?"
+    ],
+    "tx_success": [
+      "✅ Verified! You have premium access.",
+      "🎉 Payment received! Let's build."
+    ],
+    "tx_fail": [
+      "❌ Invalid ID. Try again.",
+      "⚠️ Verification failed."
+    ],
+    "session_expired": [
+      "⏰ Your session has expired. Please verify again to continue.",
+      "⏱️ Time's up! Please verify again to continue chatting."
+    ],
+    "ai_thinking": "AI is thinking...",
+    "chat_error": "Chat Error",
+    "input_placeholder_verified": "Ask your AI anything...",
+    "input_placeholder_unverified": "Type your message..."
+  },
+  "faq": [
+    {
+      "id": "q1",
+      "label": "🤔 What is this?",
+      "question": "What is Coffee Engine?",
+      "answer": "CoffeeEngine is a small but powerful layer that sits between your users and your AI features.\n\nThink of it as a payment-aware gate:\n\n• A user wants to access a Custom GPT or AI-powered feature\n• CoffeeEngine checks whether they've supported you (for example, by buying you a coffee)\n• If yes → access granted\n• If not → a friendly nudge instead of a hard paywall\n\nIt's designed for developers who want to monetize without:\n• building full subscription systems\n• managing user accounts\n• or turning their project into a SaaS monster\n\nLightweight, modular, and embeddable anywhere."
+    },
+    {
+      "id": "q2",
+      "label": "💰 Is it free?",
+      "question": "Is this free to use?",
+      "answer": "Yes — the code is fully open source.\n\nThere is:\n• no CoffeeEngine subscription\n• no platform fee\n• no hidden percentage cut\n\nYou only pay the standard fees of the payment provider you choose (e.g. Buy Me a Coffee, Stripe in the future, etc.).\n\nCoffeeEngine simply verifies:\n\"Has this user paid or supported this project?\"\n\nNothing more. Nothing less."
+    },
+    {
+      "id": "q3",
+      "label": "🚀 How does it work?",
+      "question": "How does Coffee Engine work?",
+      "answer": "At its core, CoffeeEngine does one thing very well:\n\nIt verifies payments and turns them into access signals.\n\n• A payment provider sends a signal (API / webhook / verification call)\n• CoffeeEngine validates it\n• Your app or Custom GPT asks: \"Is this user allowed?\"\n• CoffeeEngine answers with a clear yes / no\n\nNo user database required.\nNo long-lived sessions required.\nJust simple, verifiable logic you can trust."
+    },
+    {
+      "id": "q4",
+      "label": "⚙️ How do I set it up?",
+      "question": "How do I set this up?",
+      "answer": "Getting started is intentionally boring (in a good way):\n\n1. Clone the repository\n   Everything you need is already there.\n\n2. Create a Buy Me a Coffee API key\n   This is how CoffeeEngine verifies payments.\n\n3. Deploy to Vercel\n   One-click deploy, edge-friendly, zero infra stress.\n\n4. Set your environment variables\n   API keys, secrets, done.\n\nOnce deployed, you can plug CoffeeEngine into:\n• Custom GPT actions\n• AI-powered web apps\n• Internal tools\n• Experiments\n\nIf it can make an HTTP request, it can use CoffeeEngine."
+    }
+  ],
+  "starters": [
+    "🚀 Help me set up Buy Me a Coffee",
+    "🤖 How do I connect a Custom GPT?",
+    "📝 Analyze my project structure",
+    "🔧 Debug my webhook configuration"
+  ]
+}

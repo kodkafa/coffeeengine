@@ -18,6 +18,7 @@ import { openai } from "@ai-sdk/openai"
 import { anthropic } from "@ai-sdk/anthropic"
 import { config } from "@/config"
 import { sessionStore } from "@/services/session-store.service"
+import chatSettings from "@/config/chat-settings.json"
 
 // Define the AI provider type
 type AIProvider = "openai" | "anthropic" | "vercel-gateway"
@@ -60,10 +61,14 @@ export async function POST(req: NextRequest) {
     // Get API key from server-side configuration (secure)
     const apiKey = config.getAiApiKey(aiProvider)
 
-    const systemMessage = `${systemPrompt || "You are a helpful assistant."}
+    // Use system prompt from chat settings, with optional override from request
+    const baseSystemPrompt = systemPrompt || chatSettings.agent.systemPrompt
+
+    const systemMessage = `${baseSystemPrompt}
 
 User verified email: ${session.payerEmail || "Unknown"}
-Premium tier: Standard`
+Premium tier: Standard
+Session duration: ${chatSettings.session.durationMinutes} minutes`
 
     // Prepare messages for the AI
     const userMessages = messages.map((m) => ({
