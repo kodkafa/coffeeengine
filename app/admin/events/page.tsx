@@ -27,7 +27,7 @@ interface EventStats {
   totalRevenueFormatted: string
 }
 
-export default function EventsPage() {
+export default function AdminEventsPage() {
   const [events, setEvents] = useState<NormalizedEvent[]>([])
   const [stats, setStats] = useState<EventStats | null>(null)
   const [loading, setLoading] = useState(false)
@@ -89,10 +89,9 @@ export default function EventsPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Event Browser</h1>
-          <p className="text-muted-foreground">View and analyze all webhook events</p>
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Admin panel for viewing and analyzing webhook events</p>
         </div>
-        <Button onClick={() => (window.location.href = "/")}>Back to Home</Button>
       </div>
 
       {stats && (
@@ -248,3 +247,4 @@ export default function EventsPage() {
     </div>
   )
 }
+

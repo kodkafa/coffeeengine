@@ -1,0 +1,9 @@
+{
+  "firstMessage": "Haha, sorry! My mind is a bit frozen right now... I could really use a coffee to get my gears turning! ☕\n\nHave you already bought me a coffee? If so, I'd love to continue our chat with full brain power!",
+  "askTransactionId": "Great! Could you please share your transaction ID? You can find it in your receipt email from Buy Me a Coffee.",
+  "transactionNotCompleted": "No worries! Once you've completed the coffee transaction, just let me know and I'll help you verify it. You can use the button below to support me.",
+  "verificationSuccess": "Perfect! Your transaction has been verified. Now I can help you with more detailed responses. What would you like to know?",
+  "supportButtonClicked": "Ooh, I'm so excited about that coffee! ☕✨ Once you complete the transaction, just come back and let me know - I'll be here ready to chat with full brain power!",
+  "fallback": "I'm here to help! Could you support me with a coffee to continue our conversation?"
+}
+

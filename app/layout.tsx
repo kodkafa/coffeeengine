@@ -1,9 +1,9 @@
-import type React from "react"
+import { Button } from "@/components/ui/button"
+import { Analytics } from "@vercel/analytics/next"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import type React from "react"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -39,20 +39,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
-        <header className="border-b border-border bg-card">
+    <html lang="en" className="h-full">
+      <body className={`font-sans antialiased flex flex-col h-full`}>
+        <header className="border-b border-border bg-card shrink-0">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold hover:opacity-80 transition">
               ☕ Coffee Engine
             </Link>
             <nav className="flex items-center gap-4">
-              <Button variant="ghost" asChild>
-                <Link href="/">Home</Link>
-              </Button>
-              <Button variant="ghost" asChild>
-                <Link href="/premium">Premium</Link>
-              </Button>
               <Button variant="ghost" asChild>
                 <Link href="/privacy">Privacy</Link>
               </Button>
@@ -63,47 +57,27 @@ export default function RootLayout({
           </div>
         </header>
 
-        <main>{children}</main>
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden">{children}</main>
 
-        <footer className="border-t border-border bg-muted mt-12">
+        {/* <footer className="border-t border-border bg-muted shrink-0 mt-auto">
           <div className="max-w-7xl mx-auto px-4 py-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               <div>
                 <h3 className="font-semibold mb-3">Product</h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>
-                    <Link href="/" className="hover:text-foreground transition">
-                      Home
-                    </Link>
-                  </li>
                   <li>
                     <Link href="/premium" className="hover:text-foreground transition">
                       Premium
                     </Link>
                   </li>
                   <li>
+                    <Link href="/privacy" className="hover:text-foreground transition">
+                      Privacy
+                    </Link>
+                  </li>
+                  <li>
                     <Link href="/api/openapi" className="hover:text-foreground transition">
                       API Docs
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-3">Developers</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>
-                    <Link href="/dev/webhook-tester" className="hover:text-foreground transition">
-                      Webhook Tester
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/dev/events" className="hover:text-foreground transition">
-                      Event Browser
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/api/coffee/health" className="hover:text-foreground transition">
-                      Health Check
                     </Link>
                   </li>
                 </ul>
@@ -118,23 +92,13 @@ export default function RootLayout({
                   </li>
                 </ul>
               </div>
-              <div>
-                <h3 className="font-semibold mb-3">Status</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>
-                    <a href="https://status.coffee-engine.local" className="hover:text-foreground transition">
-                      System Status
-                    </a>
-                  </li>
-                </ul>
-              </div>
             </div>
             <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
               <p>Coffee Engine v2.0 - Modular Payment Verification for AI-Gated Features</p>
               <p className="mt-2">Built with Next.js 16, Zod, Vercel KV, and Shadcn/UI</p>
             </div>
           </div>
-        </footer>
+        </footer> */}
 
         <Analytics />
       </body>

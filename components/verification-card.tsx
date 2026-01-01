@@ -2,24 +2,38 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { apiClient, type VerificationResult } from "@/lib/api-client"
-import { CheckCircle2, AlertTriangle, Copy } from "lucide-react"
+import { AlertTriangle, CheckCircle2, Copy } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface VerificationCardProps {
   onVerified?: (result: VerificationResult) => void
+  defaultTransactionId?: string
 }
 
-export function VerificationCard({ onVerified }: VerificationCardProps) {
-  const [transactionId, setTransactionId] = useState("")
-  const [providerId, setProviderId] = useState("bmc")
+export function VerificationCard({ onVerified, defaultTransactionId = "" }: VerificationCardProps) {
+  const [transactionId, setTransactionId] = useState(defaultTransactionId)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<VerificationResult | null>(null)
+
+  // Get provider from localStorage, default to "bmc"
+  const getProviderId = (): string => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("coffee_engine_provider") || "bmc"
+    }
+    return "bmc"
+  }
+
+  useEffect(() => {
+    if (defaultTransactionId) {
+      setTransactionId(defaultTransactionId)
+    }
+  }, [defaultTransactionId])
 
   const handleVerify = async () => {
     if (!transactionId.trim()) {
@@ -28,8 +42,17 @@ export function VerificationCard({ onVerified }: VerificationCardProps) {
 
     setLoading(true)
     try {
+      const providerId = getProviderId()
       const verificationResult = await apiClient.verifyTransaction(transactionId, providerId)
       setResult(verificationResult)
+      
+      // Save session ID to localStorage if verification succeeded
+      if (verificationResult.valid && verificationResult.sessionId) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("coffee_engine_session", verificationResult.sessionId)
+        }
+      }
+      
       onVerified?.(verificationResult)
     } finally {
       setLoading(false)
@@ -44,10 +67,10 @@ export function VerificationCard({ onVerified }: VerificationCardProps) {
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Verify Transaction</CardTitle>
-        <CardDescription>Enter your transaction ID to verify payment and unlock premium features</CardDescription>
-      </CardHeader>
+        <CardHeader>
+          <CardTitle>Verify Transaction</CardTitle>
+          <CardDescription>Verify your transaction to continue the conversation</CardDescription>
+        </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="transaction-id" className="text-sm font-medium">
@@ -61,23 +84,6 @@ export function VerificationCard({ onVerified }: VerificationCardProps) {
             onKeyDown={handleKeyDown}
             disabled={loading}
           />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="provider-id" className="text-sm font-medium">
-            Payment Provider
-          </label>
-          <select
-            id="provider-id"
-            value={providerId}
-            onChange={(e) => setProviderId(e.target.value)}
-            disabled={loading}
-            className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
-          >
-            <option value="bmc">Buy Me a Coffee</option>
-            <option value="stripe">Stripe</option>
-            <option value="patreon">Patreon</option>
-          </select>
         </div>
 
         <Button onClick={handleVerify} disabled={loading || !transactionId.trim()} className="w-full">

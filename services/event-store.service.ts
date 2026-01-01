@@ -1,6 +1,7 @@
 // Event Store Service - persistent storage for all webhook events
 
 import { kv } from "@/lib/kv"
+import { config } from "@/config"
 import type { NormalizedEvent } from "@/types"
 import { NormalizedEventSchema } from "@/lib/schemas"
 
@@ -37,8 +38,17 @@ export class EventStoreService implements IEventStore {
     const eventKey = `event:${validated.providerId}:${validated.externalId}`
     const eventWithTimestamp = { ...validated, storedAt: timestamp }
 
-    // 1. Store the full event data
-    await kv.set(eventKey, JSON.stringify(eventWithTimestamp))
+    // 1. Store the full event data (with optional TTL)
+    const eventTtl = config.eventStorageTtlSeconds
+    if (eventTtl === null) {
+      // Permanent storage
+      await kv.set(eventKey, JSON.stringify(eventWithTimestamp))
+    } else {
+      // Storage with TTL
+      await kv.set(eventKey, JSON.stringify(eventWithTimestamp), {
+        ex: eventTtl,
+      })
+    }
 
     // 2. Add to provider-specific event list (for pagination)
     const providerListKey = `events:${validated.providerId}`

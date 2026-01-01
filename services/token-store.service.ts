@@ -1,9 +1,9 @@
 // Token Store Service - manages transaction verification tokens in KV
 
-import { kv } from "@/lib/kv"
 import { config } from "@/config"
-import type { NormalizedEvent } from "@/types"
+import { kv } from "@/lib/kv"
 import { NormalizedEventSchema } from "@/lib/schemas"
+import type { NormalizedEvent } from "@/types"
 
 export interface ITokenStore {
   store(event: NormalizedEvent): Promise<void>
@@ -32,7 +32,7 @@ export class TokenStoreService implements ITokenStore {
     const validated = NormalizedEventSchema.parse(event)
 
     const key = this.getKey(validated.providerId, validated.externalId)
-    const ttl = config.tokenTtlSeconds
+    const ttl = config.transactionTtlSeconds
 
     await kv.set(key, JSON.stringify(validated), {
       ex: ttl,

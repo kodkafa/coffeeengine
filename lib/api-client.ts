@@ -21,6 +21,7 @@ export const VerificationResultSchema = z.object({
   occurredAt: z.string().optional(),
   payerEmail: z.string().optional(),
   contextId: z.string().optional(),
+  sessionId: z.string().optional(),
 })
 
 export type VerificationResult = z.infer<typeof VerificationResultSchema>
@@ -43,18 +44,17 @@ class ApiClient {
   }
 
   /**
-   * Verify a transaction with the Coffee Engine
+   * Verify a transaction with the Coffee Engine (public endpoint, no auth required)
    * @param transactionId - The transaction ID to verify
    * @param providerId - Optional provider ID (defaults to 'bmc')
    * @param contextId - Optional context identifier for tracking
    * @returns VerificationResult with transaction details if valid
    *
-   * Note: API authentication is handled server-side. The COFFEE_API_KEY is a
-   * secret environment variable only accessible to server-side routes.
+   * Note: This uses the public endpoint that doesn't require API key headers.
    */
   async verifyTransaction(transactionId: string, providerId = "bmc", contextId?: string): Promise<VerificationResult> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/coffee/verify`, {
+      const response = await fetch(`${this.baseUrl}/api/coffee/verify-public`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
