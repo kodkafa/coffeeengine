@@ -8,7 +8,6 @@
 
 import { VerificationCard } from "@/components/steps/verification-card"
 import chatSettings from "@/config/chat-messages.json"
-import { getDefaultProviderId } from "@/config/providers"
 import { createChatMessage } from "@/engine/utils/message"
 import { logger } from "@/lib/logger"
 import { getRandomMessage } from "@/lib/utils"
@@ -42,9 +41,18 @@ export const verifyStep: Step = {
 
   async run(ctx: ChatContext, input?: string): Promise<StepResult> {
     // Verify the transaction using the EXISTING verification service
-    // Provider might not be in context yet if coming directly to verify step (rare but possible),
-    // so we default to default provider.
-    const providerId = ctx.provider?.id || getDefaultProviderId()
+    // Provider MUST be in context - if not, show error
+    if (!ctx.provider?.id) {
+      logger.warn({}, "Provider not set in context for verification")
+      return {
+        messages: [
+          createChatMessage("assistant", "Please select a payment provider first."),
+        ],
+        nextStepId: "first_coffee",
+      }
+    }
+    
+    const providerId = ctx.provider.id
 
     // Initial load: ask for transaction ID
     if (!input) {
@@ -131,7 +139,7 @@ export const verifyStep: Step = {
         },
         body: JSON.stringify({
           transactionId: result.externalId || input,
-          providerId: result.providerId || providerId,
+          providerId: providerId, // Use providerId from context, not from result
         }),
       })
 

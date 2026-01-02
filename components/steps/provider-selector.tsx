@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { getProviderMetadata } from "@/config/providers"
 import { StepComponentProps } from "@/types/chat-ui"
 import * as LucideIcons from "lucide-react"
 import { Coffee } from "lucide-react"
@@ -43,6 +44,16 @@ export function ProviderSelector({ providers, onSendMessage, className }: Provid
       localStorage.setItem("coffee_engine_provider", provider.id)
     }
 
+    // Get provider URL from config (not from prop)
+    const providerMeta = getProviderMetadata(provider.id)
+    const providerUrl = providerMeta?.url
+
+    // Open provider URL in new tab (from config)
+    if (providerUrl && providerUrl !== "#") {
+      window.open(providerUrl, "_blank", "noopener,noreferrer")
+    }
+
+    // Send provider selection message to set context
     if (onSendMessage) {
       await onSendMessage(`provider:${provider.id}`)
     }

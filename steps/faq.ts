@@ -47,7 +47,7 @@ export const faqStep: Step = {
       // Match found: show question and answer, keep FAQ buttons visible
       return {
         messages: [
-          createChatMessage("user", faq.question),
+          // createChatMessage("user", faq.question),
           createChatMessage("assistant", faq.answer),
         ],
         ui: {

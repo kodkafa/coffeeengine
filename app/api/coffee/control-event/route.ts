@@ -2,10 +2,14 @@
 // Calls provider's controlEvent method to process verified transaction
 
 import { getDefaultProviderId } from "@/config/providers"
+import { bootstrap } from "@/lib/bootstrap"
+import { logger } from "@/lib/logger"
 import { providerRegistry } from "@/services/provider-registry.service"
 import { tokenStore } from "@/services/token-store.service"
-import { logger } from "@/lib/logger"
 import { type NextRequest, NextResponse } from "next/server"
+
+// Bootstrap providers on module load
+bootstrap()
 
 export async function POST(request: NextRequest) {
   try {

@@ -57,7 +57,7 @@ export function Chat({ systemPrompt, components, config, onSessionChange, onSend
   
   // UI state
   const [messages, setMessages] = useState<StepMessage[]>([])
-  const [legacyComponents, setLegacyComponents] = useState<StepComponent[]>([])
+  // const [legacyComponents, setLegacyComponents] = useState<StepComponent[]>([])
   const [ui, setUI] = useState<StepUI | null>(null)
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -160,9 +160,9 @@ export function Chat({ systemPrompt, components, config, onSessionChange, onSend
               .filter((msg: StepMessage) => msg.role !== "system")
           )
         }
-        if (finalResult.components) {
-          setLegacyComponents(finalResult.components)
-        }
+        // if (finalResult.components) {
+        //   setLegacyComponents(finalResult.components)
+        // }
         if (finalResult.ui) {
           setUI(finalResult.ui)
         }
@@ -268,7 +268,7 @@ export function Chat({ systemPrompt, components, config, onSessionChange, onSend
     const timeoutId = setTimeout(scrollToBottom, 100)
     
     return () => clearTimeout(timeoutId)
-  }, [messages, ui, legacyComponents, isLoading])
+  }, [messages, ui, isLoading])
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -330,11 +330,11 @@ export function Chat({ systemPrompt, components, config, onSessionChange, onSend
         ])
       }
 
-      if (finalResult.components) {
-        setLegacyComponents(finalResult.components)
-      } else {
-        setLegacyComponents([])
-      }
+      // if (finalResult.components) {
+      //   setLegacyComponents(finalResult.components)
+      // } else {
+      //   setLegacyComponents([])
+      // }
 
       if (finalResult.ui) {
         setUI(finalResult.ui)
@@ -553,11 +553,11 @@ export function Chat({ systemPrompt, components, config, onSessionChange, onSend
           )}
 
           {/* Render legacy components (backward compatibility) */}
-          {!ui && legacyComponents.length > 0 && (
+          {/* {!ui && legacyComponents.length > 0 && (
             <div className="space-y-4">
               {legacyComponents.map((component, index) => renderLegacyComponent(component, index))}
             </div>
-          )}
+          )} */}
 
           {/* Conversation Starters - Show after verification (ai_chat step) */}
           {hasSession && localContext.currentStepId === "ai_chat" && config?.starters && config.starters.length > 0 && !isLoading && (
@@ -673,11 +673,11 @@ export function Chat({ systemPrompt, components, config, onSessionChange, onSend
               )}
 
               {/* Render legacy components (backward compatibility) */}
-              {!ui && legacyComponents.length > 0 && (
+              {/* {!ui && legacyComponents.length > 0 && (
                 <div className="space-y-4">
                   {legacyComponents.map((component, index) => renderLegacyComponent(component, index))}
                 </div>
-              )}
+              )} */}
 
               {/* Conversation Starters - Show after verification (ai_chat step) */}
               {hasSession && localContext.currentStepId === "ai_chat" && config?.starters && config.starters.length > 0 && !isLoading && (

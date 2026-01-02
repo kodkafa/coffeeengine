@@ -10,7 +10,7 @@ export const bmcConfig: ProviderMetadata = {
   description: "BMC webhook provider with support for donations, memberships, and subscriptions",
   secretEnvVar: "WEBHOOK_SECRET_BMC",
   enabled: true,
-  url: process.env.NEXT_PUBLIC_BMC_URL || "https://buymeacoffee.com",
+  url: process.env.NEXT_PUBLIC_BMC_URL || "https://buymeacoffee.com", // Provider URL from env variable
   icon: "Coffee", // Icon name from lucide-react
 }
 
