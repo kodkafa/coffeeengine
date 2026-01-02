@@ -21,6 +21,16 @@ export class VerificationService {
     try {
       logger.debug({ providerId }, "Verifying transaction")
 
+      // Check if transaction has already been used
+      const isUsed = await tokenStore.isUsed(providerId, transactionId)
+      if (isUsed) {
+        logger.debug({ providerId, transactionId }, "Transaction already used")
+        return {
+          valid: false,
+          reason: "This transaction has already been verified and used",
+        }
+      }
+
       // Check if token exists in store
       const event = await tokenStore.retrieve(providerId, transactionId)
 

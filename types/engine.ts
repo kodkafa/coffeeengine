@@ -5,30 +5,16 @@ export interface ChatMessage {
   timestamp: Date
 }
 
-/**
- * UI Component types that can be rendered by the chat interface
- */
-export type UIComponentType =
-  | "faq_buttons"
-  | "provider_buttons" // Legacy - use provider-selector instead
-  | "provider-selector"
-  | "support-card"
-  | "verification_card"
-  | "verification-status"
-  | "timer"
-  | string
+
+export type UIComponentType = string
 
 export interface UIComponent {
   type: UIComponentType
   props?: Record<string, unknown>
 }
 
-/**
- * UI configuration from step engine
- * Steps can return this to specify which component to render with what props
- */
 export interface StepUI {
-  component: "provider-selector" | "support-card" | "verification-status" | "faq_buttons" | "verification_card"
+  component: string
   props?: Record<string, unknown>
 }
 
@@ -68,8 +54,15 @@ export interface StepResult {
   ctxPatch?: Partial<ChatContext>
 }
 
+import type { ComponentType } from "react"
+
 export interface Step {
   id: string
+  /**
+   * Components used by this step.
+   * Maps component ID (returned in ui.component) to the React Component.
+   */
+  components?: Record<string, ComponentType<any>>
   run: (ctx: ChatContext, input?: string) => StepResult | Promise<StepResult>
 }
 

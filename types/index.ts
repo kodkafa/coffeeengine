@@ -14,6 +14,7 @@ export interface WebhookProvider {
   providerId: string
   verifyRequest(headers: Headers, body: string, secret: string): Promise<boolean>
   normalizePayload(payload: unknown): Promise<NormalizedEvent>
+  controlEvent(event: NormalizedEvent): Promise<EventControlResult>
 }
 
 export interface VerificationResult {
@@ -25,6 +26,12 @@ export interface VerificationResult {
   currency?: string
   occurredAt?: string
   payerEmail?: string
+}
+
+export interface EventControlResult {
+  verifiedAt: string
+  TTL: number // saniye cinsinden
+  thanksMessage: string // templated mesaj
 }
 
 export interface ProviderConfig {

@@ -1,5 +1,9 @@
 import { logger } from "@/lib/logger"
-import type { NormalizedEvent, WebhookProvider } from "@/types"
+import { template } from "@/lib/template"
+import { getRandomMessage } from "@/lib/utils"
+import type { ProviderEventMap } from "@/services/provider-registry.service"
+import type { EventControlResult, NormalizedEvent, WebhookProvider } from "@/types"
+import crypto from "crypto"
 import type {
   BmcDonationData,
   BmcExtraData,
@@ -7,10 +11,9 @@ import type {
   BmcShopOrderData,
   BmcSubscriptionData,
   BmcWebhook,
-} from "@/types/bmc-events"
-import type { ProviderEventMap } from "@/services/provider-registry.service"
+} from "./bmc.events"
 import { BMC_EVENT_MAP } from "./bmc.map"
-import crypto from "crypto"
+import { bmcMessages, bmcProviderConfig } from "./config"
 
 export class BmcProvider implements WebhookProvider {
   readonly providerId = "bmc"
@@ -207,6 +210,65 @@ export class BmcProvider implements WebhookProvider {
         currentPeriodEnd: data.current_period_end,
         cancelAtPeriodEnd: data.cancel_at_period_end,
       },
+    }
+  }
+
+  async controlEvent(event: NormalizedEvent): Promise<EventControlResult> {
+    // Calculate coffee count from event metadata
+    let coffeeCount = 1 // Default to 1 coffee
+
+    if (event.eventMetadata) {
+      // Try to get coffeeCount directly from metadata (for donations)
+      if (typeof event.eventMetadata.coffeeCount === "number") {
+        coffeeCount = event.eventMetadata.coffeeCount
+      } else if (
+        typeof event.eventMetadata.coffeePrice === "number" &&
+        event.eventMetadata.coffeePrice > 0
+      ) {
+        // Calculate from amount and coffee price
+        coffeeCount = Math.floor(event.amountMinor / 100 / (event.eventMetadata.coffeePrice as number))
+        if (coffeeCount < 1) {
+          coffeeCount = 1
+        }
+      }
+    }
+
+    // Calculate TTL based on coffee count (in seconds)
+    // Base TTL from config: seconds per coffee
+    const TTL = coffeeCount * bmcProviderConfig.baseTTLSeconds
+
+    // Get supporter name from metadata or use default
+    const supporterName = (event.eventMetadata?.supporterName as string) || "supporter"
+    const amount = (event.amountMinor / 100).toFixed(2)
+    const currency = event.currency || "USD"
+
+    // Select random thanks message template
+    const messageTemplate = getRandomMessage(bmcMessages.thanks)
+
+    // Template the message
+    const thanksMessage = template(messageTemplate, {
+      coffeeCount: coffeeCount.toString(),
+      supporterName,
+      amount,
+      currency,
+    })
+
+    const verifiedAt = new Date().toISOString()
+
+    logger.debug(
+      {
+        providerId: this.providerId,
+        externalId: event.externalId,
+        coffeeCount,
+        TTL,
+      },
+      "Event controlled"
+    )
+
+    return {
+      verifiedAt,
+      TTL,
+      thanksMessage,
     }
   }
 }

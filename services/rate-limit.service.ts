@@ -5,9 +5,9 @@
  * Supports per-conversation, per-IP, and per-API-key rate limiting.
  */
 
-import { kv } from "@/lib/redis"
-import { logger } from "@/lib/logger"
 import { RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_SECONDS } from "@/config/chat"
+import { logger } from "@/lib/logger"
+import { kv } from "@/lib/redis"
 
 export interface RateLimitResult {
   allowed: boolean

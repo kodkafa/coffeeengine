@@ -1,8 +1,8 @@
 // Provider Registry - manages webhook provider implementations
 
 import { logger } from "@/lib/logger"
-import type { WebhookProvider } from "@/types"
 import type { EventHandler } from "@/services/event-router.service"
+import type { WebhookProvider } from "@/types"
 
 export interface ProviderEventMap {
   event: string

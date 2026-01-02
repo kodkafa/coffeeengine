@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
 export const metadata = {
@@ -24,11 +23,9 @@ export default function PrivacyPage() {
         </div>
 
         {/* Overview */}
-        <Card>
-          <CardHeader>
-            <CardTitle>1. Overview</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-relaxed">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">1. Overview</h2>
+          <div className="space-y-4 text-sm leading-relaxed">
             <p>
               Coffee Engine is designed to assist users in installing and working with a React repository developed by
               us. The system operates without collecting, storing, or transferring personal user data.
@@ -36,40 +33,34 @@ export default function PrivacyPage() {
             <p className="text-muted-foreground">
               Transparency and minimal data usage are core principles of this system.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Data We Do Not Collect */}
-        <Card>
-          <CardHeader>
-            <CardTitle>2. Data We Do Not Collect</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3 text-sm">
-              {[
-                "Personal information (such as name, email address, IP address, or location)",
-                "User tracking across conversations",
-                "Cookies, analytics tools, or tracking technologies",
-                "Conversation history outside of the current session",
-                "User data sent to third-party services",
-              ].map((item, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <span className="text-primary font-semibold mt-0.5">✓</span>
-                  <span>
-                    Does <strong>not</strong> collect {item}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">2. Data We Do Not Collect</h2>
+          <ul className="space-y-3 text-sm">
+            {[
+              "Personal information (such as name, email address, IP address, or location)",
+              "User tracking across conversations",
+              "Cookies, analytics tools, or tracking technologies",
+              "Conversation history outside of the current session",
+              "User data sent to third-party services",
+            ].map((item, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <span className="text-primary font-semibold mt-0.5">✓</span>
+                <span>
+                  Does <strong>not</strong> collect {item}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         {/* Transaction Verification */}
-        <Card>
-          <CardHeader>
-            <CardTitle>3. Transaction Verification</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-relaxed">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">3. Transaction Verification</h2>
+          <div className="space-y-4 text-sm leading-relaxed">
             <p>
               The only data that may be temporarily processed is a <strong>transaction ID</strong> provided voluntarily
               by the user for coffee support verification.
@@ -87,15 +78,13 @@ export default function PrivacyPage() {
                 </li>
               ))}
             </ul>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Knowledge Base Usage */}
-        <Card>
-          <CardHeader>
-            <CardTitle>4. Knowledge Base Usage</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-relaxed">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">4. Knowledge Base Usage</h2>
+          <div className="space-y-4 text-sm leading-relaxed">
             <p>
               Coffee Engine includes a knowledge base consisting of a React repository and related technical
               documentation.
@@ -112,44 +101,38 @@ export default function PrivacyPage() {
                 </li>
               ))}
             </ul>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Data Sharing */}
-        <Card>
-          <CardHeader>
-            <CardTitle>5. Data Sharing</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-relaxed">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">5. Data Sharing</h2>
+          <div className="space-y-4 text-sm leading-relaxed">
             <p className="font-semibold text-primary">
               Coffee Engine does not sell, rent, share, or disclose user data to any third parties.
             </p>
             <p>
               No user information is transferred to external systems, databases, or services under any circumstances.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Data Security */}
-        <Card>
-          <CardHeader>
-            <CardTitle>6. Data Security</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-relaxed">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">6. Data Security</h2>
+          <div className="space-y-4 text-sm leading-relaxed">
             <p>Because no personal data is collected or stored, the risk of data exposure is inherently minimized.</p>
             <p className="text-muted-foreground">
               All processing occurs within the boundaries of the Coffee Engine environment and is limited to the
               duration of the active conversation.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* User Consent */}
-        <Card>
-          <CardHeader>
-            <CardTitle>7. User Consent</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-relaxed">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">7. User Consent</h2>
+          <div className="space-y-4 text-sm leading-relaxed">
             <p>
               By interacting with Coffee Engine and voluntarily providing a transaction ID for verification, the user
               acknowledges and agrees that:
@@ -165,34 +148,30 @@ export default function PrivacyPage() {
                 </li>
               ))}
             </ul>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Changes to Policy */}
-        <Card>
-          <CardHeader>
-            <CardTitle>8. Changes to This Policy</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-relaxed">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">8. Changes to This Policy</h2>
+          <div className="space-y-4 text-sm leading-relaxed">
             <p>This Privacy Policy may be updated to reflect changes in functionality or compliance requirements.</p>
             <p className="text-muted-foreground">
               Any updates will be reflected in this document with a revised "Last updated" date.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Contact */}
-        <Card>
-          <CardHeader>
-            <CardTitle>9. Contact</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-relaxed">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">9. Contact</h2>
+          <div className="space-y-4 text-sm leading-relaxed">
             <p>
               If you have questions or concerns about this Privacy Policy, please refer to the repository or project
               documentation associated with Coffee Engine.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         {/* Footer */}
         <div className="flex justify-center pt-6 border-t">

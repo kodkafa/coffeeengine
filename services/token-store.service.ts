@@ -11,6 +11,8 @@ export interface ITokenStore {
   retrieve(providerId: string, externalId: string): Promise<NormalizedEvent | null>
   exists(providerId: string, externalId: string): Promise<boolean>
   delete(providerId: string, externalId: string): Promise<void>
+  markAsUsed(providerId: string, externalId: string): Promise<void>
+  isUsed(providerId: string, externalId: string): Promise<boolean>
 }
 
 export class TokenStoreService implements ITokenStore {
@@ -27,6 +29,10 @@ export class TokenStoreService implements ITokenStore {
 
   private getKey(providerId: string, externalId: string): string {
     return `txn:${providerId}:${externalId}`
+  }
+
+  private getUsedKey(providerId: string, externalId: string): string {
+    return `txn:used:${providerId}:${externalId}`
   }
 
   async store(event: NormalizedEvent): Promise<void> {
@@ -76,6 +82,22 @@ export class TokenStoreService implements ITokenStore {
     const key = this.getKey(providerId, externalId)
     await kv.del(key)
     logger.debug({ key }, "Deleted token")
+  }
+
+  async markAsUsed(providerId: string, externalId: string): Promise<void> {
+    const key = this.getUsedKey(providerId, externalId)
+    // Store with same TTL as transaction to keep them in sync
+    const ttl = config.transactionTtlSeconds
+    await kv.set(key, "1", {
+      ex: ttl,
+    })
+    logger.debug({ key, ttl }, "Marked transaction as used")
+  }
+
+  async isUsed(providerId: string, externalId: string): Promise<boolean> {
+    const key = this.getUsedKey(providerId, externalId)
+    const exists = await kv.exists(key)
+    return exists === 1
   }
 }
 

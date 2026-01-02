@@ -16,12 +16,19 @@
       "☕ I need a coffee to answer that custom request.",
       "🔒 Unlock full AI power with a coffee."
     ],
+    "coffee_break": [
+      "☕ I need another coffee!",
+      "🔋 My energy is depleted, I need a coffee.",
+      "🧠 My brain stopped, coffee is essential!",
+      "⚡ My power source is exhausted, it's coffee time.",
+      "💤 I went into sleep mode, wake me up with coffee."
+    ],
     "ask_for_tx": [
       "📝 Please paste your Transaction ID.",
       "🙏 Thanks! What is your TX ID?"
     ],
     "tx_success": [
-      "✅ Verified! You have premium access.",
+      "✅ Verified! You're all set.",
       "🎉 Payment received! Let's build."
     ],
     "tx_fail": [

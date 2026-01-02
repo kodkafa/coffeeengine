@@ -2,9 +2,10 @@
 
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { StepComponentProps } from "@/types/chat-ui"
 import { AlertTriangle, HelpCircle } from "lucide-react"
 
-interface SupportCardProps {
+interface SupportCardProps extends StepComponentProps {
   title?: string
   description?: string
   errorContext?: {

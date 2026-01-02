@@ -1,6 +1,11 @@
+import Version from "@/components/common/version"
+import { Logo } from "@/components/logo"
+import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import "@/styles/globals.css"
 import { Analytics } from "@vercel/analytics/next"
+import { Github } from "lucide-react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import Link from "next/link"
@@ -39,67 +44,37 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`font-sans antialiased flex flex-col h-full`}>
-        <header className="border-b border-border bg-card shrink-0">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold hover:opacity-80 transition">
-              ☕ Coffee Engine
-            </Link>
-            <nav className="flex items-center gap-4">
-              <Button variant="ghost" asChild>
-                <Link href="/privacy">Privacy</Link>
-              </Button>
-              <Button variant="ghost" asChild>
-                <Link href="/api/openapi">API Docs</Link>
-              </Button>
-            </nav>
-          </div>
-        </header>
-
-        <main className="flex-1 flex flex-col min-h-0 overflow-hidden">{children}</main>
-
-        {/* <footer className="border-t border-border bg-muted shrink-0 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <div>
-                <h3 className="font-semibold mb-3">Product</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>
-                    <Link href="/premium" className="hover:text-foreground transition">
-                      Premium
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/privacy" className="hover:text-foreground transition">
-                      Privacy
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/api/openapi" className="hover:text-foreground transition">
-                      API Docs
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-3">Legal</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>
-                    <Link href="/privacy" className="hover:text-foreground transition">
-                      Privacy Policy
-                    </Link>
-                  </li>
-                </ul>
-              </div>
+    <html lang="en" className="h-full" suppressHydrationWarning>
+      <body className="font-sans antialiased h-full flex flex-col">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <header className="border-b border-border shrink-0">
+            <div className="px-4 py-4 flex items-center justify-between">
+              <Logo />
+              <nav className="flex items-center gap-4">
+                <Button variant="default" asChild>
+                  <Link href="/privacy">Privacy</Link>
+                </Button>
+                <Button variant="default" asChild>
+                  <Link href="/api/openapi">API Docs</Link>
+                </Button>
+                <Button variant="default" asChild>
+                  <Link href="https://chatgpt.com/g/g-695529d612d08191af7f52a9f5424ccb-coffee-engine" target="_blank" rel="noopener noreferrer">
+                    Custom GPT
+                  </Link>
+                </Button>
+                <Button variant="default" size="icon" asChild>
+                  <Link href="https://github.com/kodkafa/coffeeengine" target="_blank" rel="noopener noreferrer">
+                    <Github className="h-5 w-5" />
+                    <span className="sr-only">GitHub Repository</span>
+                  </Link>
+                </Button>
+                <ThemeToggle />
+              </nav>
             </div>
-            <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-              <p>Coffee Engine v2.0 - Modular Payment Verification for AI-Gated Features</p>
-              <p className="mt-2">Built with Next.js 16, Zod, Vercel KV, and Shadcn/UI</p>
-            </div>
-          </div>
-        </footer> */}
-
+          </header>
+          <main className="flex-1 overflow-auto">{children}</main>
+          <Version />
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

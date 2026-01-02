@@ -15,13 +15,13 @@
  * 6. Return only StepResult output (no full context)
  */
 
-import { stepRegistry } from "@/config/steps"
 import { AUTO_ADVANCE_MAX_DEPTH } from "@/config/chat"
-import { loadChatContext, saveChatContext } from "@/engine/stateManager"
-import { StepEngine } from "@/engine/StepEngine"
-import type { StepResult } from "@/types/engine"
+import { stepRegistry } from "@/config/steps"
+import { loadChatContext, saveChatContext } from "@/engine/state-manager"
+import { StepEngine } from "@/engine/step-engine"
 import { logger } from "@/lib/logger"
 import { checkRateLimitByConversation } from "@/services/rate-limit.service"
+import type { StepResult } from "@/types/engine"
 import { type NextRequest, NextResponse } from "next/server"
 
 interface ChatRequest {

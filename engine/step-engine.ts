@@ -12,6 +12,7 @@
  */
 
 import type { ChatContext, Step, StepResult } from "./types"
+import { createChatMessage } from "./utils/message"
 
 export interface EngineDispatchResult {
   /**
@@ -60,7 +61,24 @@ export class StepEngine {
       throw new Error(`Active step not found: ${activeStepId}`)
     }
 
-    // Execute the step
+    // Add user input to history BEFORE step execution
+    // Note: Step receives original input for processing, but we store it as system message
+    // if it's an internal command (like "provider:bmc") to hide it from UI
+    let inputMessage: ReturnType<typeof createChatMessage> | null = null
+    if (input) {
+      const normalizedInput = input.toLowerCase().trim()
+      // Detect internal command patterns - these are for step communication, not user display
+      const isInternalCommand = normalizedInput.startsWith("provider:")
+      
+      // Store as system message to hide from UI, but step still receives original input
+      inputMessage = createChatMessage(
+        isInternalCommand ? "system" : "user",
+        input
+      )
+    }
+
+    // Execute the step with original input (step needs to process it)
+    // Step will handle the input and may transition based on it
     const result = await step.run(ctx, input)
 
     // Build the updated context
@@ -70,11 +88,12 @@ export class StepEngine {
       ...result.ctxPatch,
       // Update current step ID (transition if nextStepId is provided, otherwise stay)
       currentStepId: result.nextStepId ?? activeStepId,
-      // Increment message count
-      messageCount: ctx.messageCount + (result.messages?.length ?? 0),
-      // Append new messages to history
+      // Increment message count (include input message if present)
+      messageCount: ctx.messageCount + (inputMessage ? 1 : 0) + (result.messages?.length ?? 0),
+      // Append input message and step output messages to history
       history: [
         ...ctx.history,
+        ...(inputMessage ? [inputMessage] : []),
         ...(result.messages ?? []),
       ],
     }

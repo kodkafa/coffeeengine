@@ -4,7 +4,7 @@
  * Provides utilities for creating ChatMessage objects.
  */
 
-import type { ChatMessage } from "../types"
+import type { ChatMessage } from "@/types/engine"
 
 /**
  * Creates a ChatMessage from role and content.

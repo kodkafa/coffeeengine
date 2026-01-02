@@ -7,10 +7,13 @@
  * Transitions only when input does not match any FAQ.
  */
 
+import { FAQButtons } from "@/components/steps/faq-buttons"
 import chatSettings from "@/config/chat-messages.json"
 import { StepId } from "@/config/steps"
-import type { ChatContext, Step, StepResult } from "@/types/engine"
 import { createChatMessage } from "@/engine/utils/message"
+import type { ChatContext, Step, StepResult } from "@/types/engine"
+
+export const FAQComponent = FAQButtons
 
 /**
  * Normalizes a string for comparison (lowercase, trim).
@@ -21,6 +24,9 @@ function normalize(str: string): string {
 
 export const faqStep: Step = {
   id: "faq",
+  components: {
+    "faq_buttons": FAQComponent,
+  },
 
   run(ctx: ChatContext, input?: string): StepResult {
     // Initial load: show FAQ buttons
@@ -51,9 +57,9 @@ export const faqStep: Step = {
       }
     }
 
-    // No match: transition to coffee_break
+    // No match: transition to first_coffee (first time coffee break)
     return {
-      nextStepId: StepId.COFFEE_BREAK,
+      nextStepId: StepId.FIRST_COFFEE,
     }
   },
 }

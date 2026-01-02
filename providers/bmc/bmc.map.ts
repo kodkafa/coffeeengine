@@ -1,5 +1,5 @@
-import type { EventHandler } from "@/services/event-router.service"
-import { handleDonation, handleGenericEvent } from "./bmc.handler"
+import type { EventHandler } from "@/services/event-router.service";
+import { handleDonation, handleGenericEvent } from "./bmc.handler";
 
 export const BMC_EVENT_MAP: Array<{ event: string; handler: EventHandler }> = [
   { event: "donation.created", handler: handleDonation },
@@ -20,4 +20,5 @@ export const BMC_EVENT_MAP: Array<{ event: string; handler: EventHandler }> = [
   { event: "subscription.payment_succeeded", handler: handleGenericEvent },
   { event: "subscription.payment_failed", handler: handleGenericEvent },
 ] as const
+
 

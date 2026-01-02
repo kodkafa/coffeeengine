@@ -14,3 +14,25 @@ export const bmcConfig: ProviderMetadata = {
   icon: "Coffee", // Icon name from lucide-react
 }
 
+/**
+ * BMC Provider Configuration
+ * Base TTL per coffee in seconds (45 minutes = 2700 seconds)
+ */
+export const bmcProviderConfig = {
+  baseTTLSeconds: 2700, // 45 minutes per coffee
+}
+
+/**
+ * BMC Provider Messages
+ * Template variables: {coffeeCount}, {supporterName}, {amount}, {currency}
+ */
+export const bmcMessages = {
+  thanks: [
+    "☕ Thanks for {coffeeCount} coffee(s), {supporterName}! You're all set.",
+    "🎉 {coffeeCount} coffee(s) received from {supporterName}! Let's build something amazing.",
+    "✨ Thank you {supporterName} for {coffeeCount} coffee(s)! Your support means everything.",
+    "🚀 {coffeeCount} coffee(s) from {supporterName}! Ready to create magic?",
+  ],
+}
+
+
