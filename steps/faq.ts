@@ -26,7 +26,9 @@ export const faqStep: Step = {
     // Initial load: show FAQ buttons
     if (!input) {
       return {
-        components: [{ type: "faq_buttons" }],
+        ui: {
+          component: "faq_buttons",
+        },
       }
     }
 
@@ -42,7 +44,9 @@ export const faqStep: Step = {
           createChatMessage("user", faq.question),
           createChatMessage("assistant", faq.answer),
         ],
-        components: [{ type: "faq_buttons" }],
+        ui: {
+          component: "faq_buttons",
+        },
         // Stay in the same step (no nextStepId)
       }
     }

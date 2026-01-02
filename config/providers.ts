@@ -1,24 +1,42 @@
 import { BmcProvider } from "@/providers/bmc/bmc.provider"
+import { bmcConfig } from "@/providers/bmc/config"
+import type { ProviderMetadata } from "@/types"
 
 export enum ProviderId {
   BMC = "bmc",
   KOFI = "kofi",
 }
 
+/**
+ * Registry of enabled provider instances
+ * Each provider should be instantiated here
+ */
 export const ENABLED_PROVIDERS = [new BmcProvider()]
 
-export const PROVIDER_METADATA = {
-  bmc: {
-    name: "Buy Me a Coffee",
-    description: "BMC webhook provider with support for donations, memberships, and subscriptions",
-    secretEnvVar: "WEBHOOK_SECRET_BMC",
-  },
-  kofi: {
-    name: "Ko-fi",
-    description: "Ko-fi webhook provider with support for donations, memberships, and subscriptions",
-    secretEnvVar: "WEBHOOK_SECRET_KOFI",
-  },
-} as const
+/**
+ * Registry of provider metadata
+ * Each provider exports its config from providers/{provider}/config.ts
+ * This registry aggregates all provider configurations
+ */
+const PROVIDER_CONFIGS: ProviderMetadata[] = [bmcConfig]
+
+/**
+ * Provider metadata map indexed by providerId
+ * Automatically generated from PROVIDER_CONFIGS
+ */
+export const PROVIDER_METADATA: Record<string, Omit<ProviderMetadata, "providerId">> = 
+  PROVIDER_CONFIGS.reduce((acc, config) => {
+    const { providerId, ...metadata } = config
+    acc[providerId] = metadata
+    return acc
+  }, {} as Record<string, Omit<ProviderMetadata, "providerId">>)
+
+/**
+ * Get all enabled provider metadata
+ */
+export function getAllProviderMetadata(): ProviderMetadata[] {
+  return PROVIDER_CONFIGS.filter((config) => config.enabled)
+}
 
 /**
  * Gets the default provider ID.

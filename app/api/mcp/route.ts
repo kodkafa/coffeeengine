@@ -11,7 +11,7 @@
  */
 
 import { config } from "@/config"
-import { getDefaultProviderId } from "@/config/providers"
+import { getDefaultProviderId, ProviderId } from "@/config/providers"
 import { logger } from "@/lib/logger"
 import { checkRateLimitByApiKey, checkRateLimitByIP } from "@/services/rate-limit.service"
 import { verificationService } from "@/services/verification.service"
@@ -129,7 +129,9 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      const { transactionId, providerId = getDefaultProviderId(), contextId } = paramsValidation.data
+      const { transactionId, providerId: providerIdParam, contextId } = paramsValidation.data
+      // Cast string to ProviderId enum, fallback to default
+      const providerId = (providerIdParam as ProviderId | undefined) || getDefaultProviderId()
 
       logger.info({ transactionId, providerId, contextId, clientIP }, "MCP verify_transaction request")
 

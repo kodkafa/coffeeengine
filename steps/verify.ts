@@ -8,11 +8,10 @@
 
 import chatSettings from "@/config/chat-messages.json"
 import { getDefaultProviderId } from "@/config/providers"
-import { StepId } from "@/config/steps"
-import type { ChatContext, Step, StepResult } from "@/types/engine"
 import { createChatMessage } from "@/engine/utils/message"
 import { getRandomMessage } from "@/lib/utils"
 import { verificationService } from "@/services/verification.service"
+import type { ChatContext, Step, StepResult } from "@/types/engine"
 import { randomBytes } from "crypto"
 
 /**
@@ -32,7 +31,9 @@ export const verifyStep: Step = {
         messages: [
           createChatMessage("assistant", getRandomMessage(chatSettings.messages.ask_for_tx)),
         ],
-        components: [{ type: "verification_card" }],
+        ui: {
+          component: "verification_card",
+        },
       }
     }
 
@@ -46,7 +47,9 @@ export const verifyStep: Step = {
         messages: [
           createChatMessage("assistant", getRandomMessage(chatSettings.messages.tx_fail)),
         ],
-        components: [{ type: "verification_card" }],
+        ui: {
+          component: "verification_card",
+        },
         // Stay on verify step to allow retry
       }
     }

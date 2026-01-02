@@ -32,3 +32,14 @@ export interface ProviderConfig {
   enabled: boolean
   secretEnvVar: string
 }
+
+/**
+ * Provider metadata including UI information
+ * Each provider should export this from their config.ts file
+ */
+export interface ProviderMetadata extends ProviderConfig {
+  name: string
+  description: string
+  url?: string
+  icon?: string // Icon name from lucide-react (e.g., "Coffee", "Heart")
+}

@@ -9,11 +9,13 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Spinner } from "@/components/ui/spinner"
 import chatSettings from "@/config/chat-messages.json"
+import { getAllProviderMetadata } from "@/config/providers"
 import { getRandomMessage } from "@/lib/utils"
 import { AlertTriangle, Send } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { CoffeeTimer } from "./coffee-timer"
-import { SupportLink } from "./support-link"
+import { ProviderSelector, type ProviderOption } from "./steps/provider-selector"
+import { SupportCard } from "./steps/support-card"
 import { VerificationCard } from "./verification-card"
 
 /**
@@ -27,10 +29,19 @@ interface StepMessage {
 }
 
 /**
- * UI Component from Step Engine
+ * UI Component from Step Engine (legacy)
  */
 interface StepComponent {
-  type: "faq_buttons" | "provider_buttons" | "verification_card"
+  type: "faq_buttons" | "provider_buttons" | "verification_card" | string
+  props?: Record<string, unknown>
+}
+
+/**
+ * Step UI configuration (new)
+ */
+interface StepUI {
+  component: "provider-selector" | "support-card" | "verification-status" | "faq_buttons" | "verification_card"
+  props?: Record<string, unknown>
 }
 
 /**
@@ -40,7 +51,8 @@ interface StepEngineResponse {
   success: boolean
   result: {
     messages?: StepMessage[]
-    components?: StepComponent[]
+    components?: StepComponent[] // Legacy
+    ui?: StepUI // New: Generic UI component specification
   }
   metadata?: {
     currentStepId?: string
@@ -88,6 +100,7 @@ export function AIChat({ systemPrompt }: AIChatProps) {
   const [conversationId] = useState<string>(getConversationId)
   const [messages, setMessages] = useState<StepMessage[]>([])
   const [components, setComponents] = useState<StepComponent[]>([])
+  const [ui, setUI] = useState<StepUI | null>(null)
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -113,6 +126,9 @@ export function AIChat({ systemPrompt }: AIChatProps) {
           }
           if (data.result.components) {
             setComponents(data.result.components)
+          }
+          if (data.result.ui) {
+            setUI(data.result.ui)
           }
           if (data.metadata?.hasSession) {
             setHasSession(true)
@@ -177,11 +193,18 @@ export function AIChat({ systemPrompt }: AIChatProps) {
           setMessages((prev) => [...prev, ...data.result.messages!])
         }
 
-        // Update components
+        // Update components (legacy)
         if (data.result.components) {
           setComponents(data.result.components)
         } else {
           setComponents([])
+        }
+
+        // Update UI (new)
+        if (data.result.ui) {
+          setUI(data.result.ui)
+        } else {
+          setUI(null)
         }
 
         // Update session state
@@ -208,11 +231,8 @@ export function AIChat({ systemPrompt }: AIChatProps) {
     await sendMessage(faq.question)
   }
 
-  const handleSupportClick = async () => {
-    // Support click is handled by the step engine
-    // We just need to send a message indicating provider selection
-    // The step engine will handle the provider:xxx format
-    const providerId = typeof window !== "undefined" ? localStorage.getItem("coffee_engine_provider") || "bmc" : "bmc"
+  const handleProviderSelect = async (providerId: string) => {
+    // Send provider selection to step engine
     await sendMessage(`provider:${providerId}`)
   }
 
@@ -221,7 +241,91 @@ export function AIChat({ systemPrompt }: AIChatProps) {
     await sendMessage(transactionId)
   }
 
-  const renderComponent = (component: StepComponent, index: number) => {
+  /**
+   * Converts provider metadata to ProviderOption format
+   */
+  const getProviderOptions = (): ProviderOption[] => {
+    const metadata = getAllProviderMetadata()
+    return metadata.map((config) => ({
+      id: config.providerId,
+      name: config.name,
+      url: config.url || "#",
+      icon: config.icon,
+    }))
+  }
+
+  /**
+   * Renders a UI component based on the new ui field
+   */
+  const renderUIComponent = (uiConfig: StepUI) => {
+    switch (uiConfig.component) {
+      case "provider-selector": {
+        const providers = (uiConfig.props?.providers as ProviderOption[] | undefined) || getProviderOptions()
+        return (
+          <div className="mt-4">
+            <ProviderSelector
+              providers={providers}
+              onProviderSelect={handleProviderSelect}
+            />
+          </div>
+        )
+      }
+
+      case "support-card": {
+        return (
+          <div className="mt-4">
+            <SupportCard
+              title={uiConfig.props?.title as string | undefined}
+              description={uiConfig.props?.description as string | undefined}
+              errorContext={uiConfig.props?.errorContext as { message?: string; step?: string; details?: string } | undefined}
+            />
+          </div>
+        )
+      }
+
+      case "verification_card":
+      case "verification-status": {
+        return (
+          <div className="mt-4">
+            <VerificationCard
+              defaultTransactionId={uiConfig.props?.defaultTransactionId as string | undefined}
+              onVerified={(result) => {
+                if (result.valid && result.externalId) {
+                  handleVerificationSuccess(result.externalId)
+                }
+              }}
+            />
+          </div>
+        )
+      }
+
+      case "faq_buttons": {
+        return (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {chatSettings.faq.map((faq) => (
+              <Button
+                key={faq.id}
+                variant="outline"
+                size="sm"
+                onClick={() => handleFAQClick(faq)}
+                disabled={isLoading}
+              >
+                {faq.label}
+              </Button>
+            ))}
+          </div>
+        )
+      }
+
+      default:
+        return null
+    }
+  }
+
+  /**
+   * Renders legacy component (for backward compatibility)
+   */
+  const renderLegacyComponent = (component: StepComponent, index: number) => {
     switch (component.type) {
       case "faq_buttons":
         return (
@@ -240,12 +344,18 @@ export function AIChat({ systemPrompt }: AIChatProps) {
           </div>
         )
 
-      case "provider_buttons":
+      case "provider_buttons": {
+        // Legacy: convert to new provider-selector
+        const providers = getProviderOptions()
         return (
           <div key={`component-${index}`} className="mt-4">
-            <SupportLink onSupportClick={handleSupportClick} />
+            <ProviderSelector
+              providers={providers}
+              onProviderSelect={handleProviderSelect}
+            />
           </div>
         )
+      }
 
       case "verification_card":
         return (
@@ -312,10 +422,17 @@ export function AIChat({ systemPrompt }: AIChatProps) {
             )
           })}
 
-          {/* Render components after last message */}
-          {components.length > 0 && (
+          {/* Render UI component (new) */}
+          {ui && (
             <div className="space-y-4">
-              {components.map((component, index) => renderComponent(component, index))}
+              {renderUIComponent(ui)}
+            </div>
+          )}
+
+          {/* Render legacy components (backward compatibility) */}
+          {!ui && components.length > 0 && (
+            <div className="space-y-4">
+              {components.map((component, index) => renderLegacyComponent(component, index))}
             </div>
           )}
 

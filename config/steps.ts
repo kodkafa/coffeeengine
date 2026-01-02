@@ -9,7 +9,7 @@ export enum StepId {
 }
 
 import { aiChatStep } from "@/steps/aiChat"
-import { coffeeBreakStep } from "@/steps/coffeeBreak"
+import { coffeeBreakStep } from "@/steps/coffee-break"
 import { faqStep } from "@/steps/faq"
 import { supportStep } from "@/steps/support"
 import { verifyStep } from "@/steps/verify"

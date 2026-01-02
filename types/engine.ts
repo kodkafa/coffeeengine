@@ -5,8 +5,30 @@ export interface ChatMessage {
   timestamp: Date
 }
 
+/**
+ * UI Component types that can be rendered by the chat interface
+ */
+export type UIComponentType =
+  | "faq_buttons"
+  | "provider_buttons" // Legacy - use provider-selector instead
+  | "provider-selector"
+  | "support-card"
+  | "verification_card"
+  | "verification-status"
+  | "timer"
+  | string
+
 export interface UIComponent {
-  type: "faq_buttons" | "provider_buttons" | "verification_card" | "timer" | string
+  type: UIComponentType
+  props?: Record<string, unknown>
+}
+
+/**
+ * UI configuration from step engine
+ * Steps can return this to specify which component to render with what props
+ */
+export interface StepUI {
+  component: "provider-selector" | "support-card" | "verification-status" | "faq_buttons" | "verification_card"
   props?: Record<string, unknown>
 }
 
@@ -31,11 +53,17 @@ export interface ChatContext {
     amountMinor?: number
     currency?: string
   }
+  errorContext?: {
+    message?: string
+    step?: string
+    details?: string
+  }
 }
 
 export interface StepResult {
   messages?: ChatMessage[]
-  components?: UIComponent[]
+  components?: UIComponent[] // Legacy - prefer using ui field
+  ui?: StepUI // New: Generic UI component specification
   nextStepId?: string
   ctxPatch?: Partial<ChatContext>
 }

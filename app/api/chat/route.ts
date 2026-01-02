@@ -57,8 +57,12 @@ async function handleAutoAdvance(
       }
     }
 
-    // If the step transitions but already has messages/components, we're done
-    if (dispatchResult.output.messages?.length || dispatchResult.output.components?.length) {
+    // If the step transitions but already has messages/components/ui, we're done
+    if (
+      dispatchResult.output.messages?.length ||
+      dispatchResult.output.components?.length ||
+      !!dispatchResult.output.ui
+    ) {
       return {
         ctx: dispatchResult.ctx,
         result: dispatchResult.output,
@@ -145,7 +149,9 @@ export async function POST(req: NextRequest) {
 
     if (dispatchResult.output.nextStepId) {
       const hasUI =
-        dispatchResult.output.messages?.length || dispatchResult.output.components?.length
+        dispatchResult.output.messages?.length ||
+        dispatchResult.output.components?.length ||
+        !!dispatchResult.output.ui
 
       if (!hasUI) {
         // No UI yet - auto-advance to get initial UI from next step
@@ -221,7 +227,9 @@ export async function GET(req: NextRequest) {
 
     if (dispatchResult.output.nextStepId) {
       const hasUI =
-        dispatchResult.output.messages?.length || dispatchResult.output.components?.length
+        dispatchResult.output.messages?.length ||
+        dispatchResult.output.components?.length ||
+        !!dispatchResult.output.ui
 
       if (!hasUI) {
         const autoAdvanceResult = await handleAutoAdvance(engine, dispatchResult.ctx)
