@@ -1,6 +1,7 @@
 // Session validation API endpoint for frontend
 
 import { sessionStore } from "@/services/session-store.service"
+import { logger } from "@/lib/logger"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
       { status: 200 },
     )
   } catch (error) {
-    console.error("[SessionAPI] Error:", error)
+    logger.error({ error }, "Session API GET error")
     return NextResponse.json({ error: "Internal Server Error", message: "Session validation failed" }, { status: 500 })
   }
 }
@@ -61,7 +62,7 @@ export async function DELETE(request: NextRequest) {
       { status: 200 },
     )
   } catch (error) {
-    console.error("[SessionAPI] Error:", error)
+    logger.error({ error }, "Session API DELETE error")
     return NextResponse.json({ error: "Internal Server Error", message: "Session deletion failed" }, { status: 500 })
   }
 }

@@ -5,6 +5,7 @@ import { providerRegistry } from "@/services/provider-registry.service"
 import { eventRouter } from "@/services/event-router.service"
 import { config } from "@/config"
 import { bootstrap } from "@/lib/bootstrap"
+import { logger } from "@/lib/logger"
 
 // Ensure bootstrap runs before handling requests
 bootstrap()
@@ -26,14 +27,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Get provider secret
     const secret = config.getProviderSecret(providerId)
     if (!secret) {
-      console.error(`[Webhook] No secret configured for provider: ${providerId}`)
+      logger.error({ providerId }, "No secret configured for provider")
       return NextResponse.json({ error: "Provider not configured" }, { status: 500 })
     }
 
     // Verify request signature
     const isValid = await provider.verifyRequest(headers, body, secret)
     if (!isValid) {
-      console.warn(`[Webhook] Invalid signature for provider: ${providerId}`)
+      logger.warn({ providerId }, "Invalid signature for provider")
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 })
     }
 
@@ -41,7 +42,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const payload = JSON.parse(body)
     const normalizedEvent = await provider.normalizePayload(payload)
 
-    console.log(`[Webhook] Received ${normalizedEvent.eventType} from ${providerId}: ${normalizedEvent.externalId}`)
+    logger.info(
+      { providerId, eventType: normalizedEvent.eventType, externalId: normalizedEvent.externalId },
+      "Received webhook"
+    )
 
     // Dispatch to event handlers
     await eventRouter.dispatch(normalizedEvent)
@@ -49,7 +53,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Acknowledge receipt to provider
     return NextResponse.json({ ok: true, received: true }, { status: 200 })
   } catch (error) {
-    console.error(`[Webhook] Error processing webhook from ${providerId}:`, error)
+    logger.error({ providerId, error }, "Error processing webhook")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

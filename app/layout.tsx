@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button"
+import "@/styles/globals.css"
 import { Analytics } from "@vercel/analytics/next"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import Link from "next/link"
 import type React from "react"
-import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })

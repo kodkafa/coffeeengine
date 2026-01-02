@@ -1,7 +1,3 @@
-// Buy Me a Coffee Event Type Definitions
-// Comprehensive type system for all BMC webhook events
-
-// Base webhook structure
 export interface BmcWebhook<T = unknown> {
   type: BmcEventType
   live_mode: boolean
@@ -11,7 +7,6 @@ export interface BmcWebhook<T = unknown> {
   data: T
 }
 
-// All possible BMC event types
 export type BmcEventType =
   | "donation.created"
   | "donation.updated"
@@ -31,7 +26,6 @@ export type BmcEventType =
   | "subscription.payment_succeeded"
   | "subscription.payment_failed"
 
-// Donation event data
 export interface BmcDonationData {
   id: number
   amount: number
@@ -56,7 +50,6 @@ export interface BmcDonationData {
   coffee_price: number
 }
 
-// Membership event data
 export interface BmcMembershipData {
   id: number
   membership_id: string
@@ -74,7 +67,6 @@ export interface BmcMembershipData {
   cancel_at_period_end: boolean
 }
 
-// Extra (tip) event data
 export interface BmcExtraData {
   id: number
   amount: number
@@ -86,7 +78,6 @@ export interface BmcExtraData {
   created_at: number
 }
 
-// Shop order event data
 export interface BmcShopOrderData {
   id: number
   order_id: string
@@ -112,7 +103,6 @@ export interface BmcShopOrderData {
   created_at: number
 }
 
-// Subscription event data
 export interface BmcSubscriptionData {
   id: number
   subscription_id: string
@@ -131,10 +121,8 @@ export interface BmcSubscriptionData {
   created_at: number
 }
 
-// Union type for all possible event data types
 export type BmcEventData = BmcDonationData | BmcMembershipData | BmcExtraData | BmcShopOrderData | BmcSubscriptionData
 
-// Type-safe webhook payloads
 export type BmcDonationWebhook = BmcWebhook<BmcDonationData>
 export type BmcMembershipWebhook = BmcWebhook<BmcMembershipData>
 export type BmcExtraWebhook = BmcWebhook<BmcExtraData>

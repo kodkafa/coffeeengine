@@ -1,53 +1,47 @@
-// Buy Me a Coffee Provider Implementation - Modular Event Handling
-
-import crypto from "crypto"
-import type { WebhookProvider, NormalizedEvent } from "@/types"
+import { logger } from "@/lib/logger"
+import type { NormalizedEvent, WebhookProvider } from "@/types"
 import type {
-  BmcWebhook,
   BmcDonationData,
-  BmcMembershipData,
   BmcExtraData,
+  BmcMembershipData,
   BmcShopOrderData,
   BmcSubscriptionData,
+  BmcWebhook,
 } from "@/types/bmc-events"
+import type { ProviderEventMap } from "@/services/provider-registry.service"
+import { BMC_EVENT_MAP } from "./bmc.map"
+import crypto from "crypto"
 
 export class BmcProvider implements WebhookProvider {
   readonly providerId = "bmc"
 
-  async verifyRequest(headers: Headers, body: string, secret: string): Promise<boolean> {
-    console.log("[v0] [BMC] === SIGNATURE VALIDATION DEBUG ===")
-    console.log("[v0] [BMC] All headers:", Object.fromEntries(headers.entries()))
-    console.log("[v0] [BMC] Body length:", body.length)
-    console.log("[v0] [BMC] Secret configured:", !!secret)
-    console.log("[v0] [BMC] Secret length:", secret?.length)
+  getEventMap(): ProviderEventMap[] {
+    return BMC_EVENT_MAP.map((item) => ({
+      event: item.event,
+      handler: item.handler,
+    }))
+  }
 
+  async verifyRequest(headers: Headers, body: string, secret: string): Promise<boolean> {
     if (!secret) {
-      console.warn("[BMC] No webhook secret configured")
+      logger.warn({}, "No webhook secret configured")
       return false
     }
 
-    // BMC sends signature as x-signature-sha256 header
     const signature = headers.get("x-signature-sha256")
 
     if (!signature) {
-      console.warn("[BMC] No signature header found (expected x-signature-sha256)")
+      logger.warn({}, "No signature header found (expected x-signature-sha256)")
       return false
     }
 
-    // This follows BMC documentation: hash the exact payload with HMAC-SHA256
     const expectedSignature = crypto.createHmac("sha256", secret).update(body).digest("hex")
-
-    console.log("[BMC] Signature validation:")
-    console.log("  Expected:", expectedSignature)
-    console.log("  Received:", signature)
-
-    // Use timing-safe comparison
     try {
       const match = crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expectedSignature, "hex"))
-      console.log("  Match:", match)
+      logger.debug({ match }, "Signature validation")
       return match
     } catch (err) {
-      console.error("[BMC] Signature comparison failed:", err)
+      logger.error({ error: err }, "Signature comparison failed")
       return false
     }
   }
@@ -59,9 +53,8 @@ export class BmcProvider implements WebhookProvider {
       throw new Error("[BMC] Invalid webhook structure: missing type or data")
     }
 
-    console.log(`[BMC] Processing event type: ${webhook.type}`)
+    logger.debug({ eventType: webhook.type }, "Processing BMC event")
 
-    // Route to type-specific normalizer
     switch (webhook.type) {
       case "donation.created":
       case "donation.updated":

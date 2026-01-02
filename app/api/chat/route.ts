@@ -1,145 +1,261 @@
 /**
- * AI Chat API Route (Server-Side AI Implementation)
- *
- * This route handles the chat interaction using server-side AI provider configuration.
- * It verifies the transaction before allowing premium features.
- *
- * Supports multiple AI providers configured via environment variables:
- * - OpenAI (via OPENAI_API_KEY)
- * - Anthropic Claude (via ANTHROPIC_API_KEY)
- * - Vercel AI Gateway (via VERCEL_AI_GATEWAY_URL)
- *
- * Security: All API keys are stored server-side and never exposed to the frontend.
+ * Chat API Route - Step Engine Integration
+ * 
+ * Handles chat messages using the Step Engine architecture with:
+ * - Rate limiting (30 requests/minute per conversation)
+ * - Server-authoritative state management (Redis)
+ * - Security: Context never accepted from client, never fully exposed in response
+ * 
+ * Flow:
+ * 1. Parse conversationId and message from request
+ * 2. Rate limit check (Redis)
+ * 3. Load context from Redis (server-authoritative)
+ * 4. Run engine.dispatch(context, message)
+ * 5. Save updated context to Redis
+ * 6. Return only StepResult output (no full context)
  */
 
+import { stepRegistry } from "@/config/steps"
+import { AUTO_ADVANCE_MAX_DEPTH } from "@/config/chat"
+import { loadChatContext, saveChatContext } from "@/engine/stateManager"
+import { StepEngine } from "@/engine/StepEngine"
+import type { StepResult } from "@/types/engine"
+import { logger } from "@/lib/logger"
+import { checkRateLimitByConversation } from "@/services/rate-limit.service"
 import { type NextRequest, NextResponse } from "next/server"
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
-import { anthropic } from "@ai-sdk/anthropic"
-import { config } from "@/config"
-import { sessionStore } from "@/services/session-store.service"
-import chatSettings from "@/config/chat-settings.json"
-
-// Define the AI provider type
-type AIProvider = "openai" | "anthropic" | "vercel-gateway"
 
 interface ChatRequest {
-  messages: Array<{ role: "user" | "assistant"; content: string }>
-  systemPrompt?: string
-  sessionId?: string
+  conversationId: string
+  message: string
+  // SECURITY: Do NOT accept context from client
+  // ctx?: ChatContext // ❌ NOT ALLOWED
+}
+
+
+/**
+ * Handles auto-advance logic when a step transitions.
+ * 
+ * If a step returns `nextStepId`, we immediately run the next step
+ * with `undefined` input to get its initial UI, preventing blank states.
+ */
+async function handleAutoAdvance(
+  engine: StepEngine,
+  ctx: Awaited<ReturnType<typeof loadChatContext>>,
+  maxDepth = AUTO_ADVANCE_MAX_DEPTH,
+): Promise<{ ctx: Awaited<ReturnType<typeof loadChatContext>>; result: StepResult }> {
+  let currentCtx = ctx
+  let depth = 0
+
+  while (depth < maxDepth) {
+    const dispatchResult = await engine.dispatch(currentCtx, undefined)
+
+    // If the step doesn't transition, we're done
+    if (!dispatchResult.output.nextStepId) {
+      return {
+        ctx: dispatchResult.ctx,
+        result: dispatchResult.output,
+      }
+    }
+
+    // If the step transitions but already has messages/components, we're done
+    if (dispatchResult.output.messages?.length || dispatchResult.output.components?.length) {
+      return {
+        ctx: dispatchResult.ctx,
+        result: dispatchResult.output,
+      }
+    }
+
+    // Step transitioned but no UI yet - continue to next step
+    currentCtx = dispatchResult.ctx
+    depth++
+  }
+
+  // Max depth reached
+  return {
+    ctx: currentCtx,
+    result: {
+      messages: [],
+      components: [],
+    },
+  }
 }
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Parse request body
     const body: ChatRequest = await req.json()
-    const { messages, systemPrompt, sessionId } = body
+    const { conversationId, message } = body
 
-    // Get session ID from header or body
-    const headerSessionId = req.headers.get("x-session-id")
-    const activeSessionId = headerSessionId || sessionId
-
-    // Check if user has a valid session
-    let session = null
-    if (activeSessionId) {
-      session = await sessionStore.getSession(activeSessionId)
-    }
-
-    if (!session || !session.verified) {
+    // Validate required fields
+    if (!conversationId || typeof conversationId !== "string") {
       return NextResponse.json(
-        { error: "Payment verification required. Please verify your transaction first." },
-        { status: 403 },
+        { error: "conversationId is required and must be a string" },
+        { status: 400 },
       )
     }
 
-    // Get AI provider from environment (default from config)
-    // Optionally allow override via header for flexibility
-    const headerProvider = req.headers.get("x-ai-provider")
-    const aiProvider: AIProvider = headerProvider
-      ? (headerProvider as AIProvider)
-      : config.aiProvider
-
-    // Get API key from server-side configuration (secure)
-    const apiKey = config.getAiApiKey(aiProvider)
-
-    // Use system prompt from chat settings, with optional override from request
-    const baseSystemPrompt = systemPrompt || chatSettings.agent.systemPrompt
-
-    const systemMessage = `${baseSystemPrompt}
-
-User verified email: ${session.payerEmail || "Unknown"}
-Premium tier: Standard
-Session duration: ${chatSettings.session.durationMinutes} minutes`
-
-    // Prepare messages for the AI
-    const userMessages = messages.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }))
-
-    // Get the last user message
-    const lastMessage = userMessages[userMessages.length - 1]
-    if (!lastMessage || lastMessage.role !== "user") {
-      return NextResponse.json({ error: "Last message must be from user" }, { status: 400 })
+    if (message === undefined || message === null || typeof message !== "string") {
+      return NextResponse.json(
+        { error: "message is required and must be a string" },
+        { status: 400 },
+      )
     }
 
-    // Build the model based on provider
-    let model: Parameters<typeof generateText>[0]["model"]
-
-    switch (aiProvider) {
-      case "openai":
-        if (!apiKey) {
-          return NextResponse.json(
-            { error: "OpenAI API key not configured. Please set OPENAI_API_KEY environment variable." },
-            { status: 500 },
-          )
-        }
-        // Create OpenAI model with API key from environment
-        model = openai("gpt-4-turbo", { apiKey })
-        break
-
-      case "anthropic":
-        if (!apiKey) {
-          return NextResponse.json(
-            { error: "Anthropic API key not configured. Please set ANTHROPIC_API_KEY environment variable." },
-            { status: 500 },
-          )
-        }
-        // Create Anthropic model with API key from environment
-        model = anthropic("claude-3-sonnet-20240229", { apiKey })
-        break
-
-      case "vercel-gateway":
-        // Vercel AI Gateway - uses default OpenAI model with gateway URL
-        if (!config.vercelAiGatewayUrl) {
-          return NextResponse.json(
-            { error: "Vercel AI Gateway URL not configured. Please set VERCEL_AI_GATEWAY_URL environment variable." },
-            { status: 500 },
-          )
-        }
-        // For Vercel Gateway, use OpenAI (gateway URL is handled via env var)
-        model = openai("gpt-4-turbo")
-        break
-
-      default:
-        return NextResponse.json({ error: "Unknown AI provider" }, { status: 400 })
+    // SECURITY: Reject any attempt to send context from client
+    if ("ctx" in body || "context" in body) {
+      return NextResponse.json(
+        { error: "Context cannot be provided by client. Server-authoritative only." },
+        { status: 400 },
+      )
     }
 
-    // Generate response using AI SDK
-    const { text } = await generateText({
-      model,
-      system: systemMessage,
-      messages: userMessages,
-    })
+    // 2. Rate limit check
+    const rateLimitResult = await checkRateLimitByConversation(conversationId)
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: "Too many requests. Please try again later.",
+          resetAt: rateLimitResult.resetAt,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": rateLimitResult.resetAt
+              ? String(Math.max(1, rateLimitResult.resetAt - Math.floor(Date.now() / 1000)))
+              : "60",
+          },
+        },
+      )
+    }
 
-    // Return the generated text
+    // 3. Load context from Redis (server-authoritative)
+    // Context is NEVER accepted from client - always loaded from server
+    const context = await loadChatContext(conversationId)
+
+    // 4. Instantiate StepEngine
+    const engine = new StepEngine(stepRegistry)
+
+    // 5. Run engine.dispatch
+    const dispatchResult = await engine.dispatch(context, message)
+
+    // Handle auto-advance if step transitioned
+    let finalResult: StepResult
+    let finalContext: Awaited<ReturnType<typeof loadChatContext>>
+
+    if (dispatchResult.output.nextStepId) {
+      const hasUI =
+        dispatchResult.output.messages?.length || dispatchResult.output.components?.length
+
+      if (!hasUI) {
+        // No UI yet - auto-advance to get initial UI from next step
+        const autoAdvanceResult = await handleAutoAdvance(engine, dispatchResult.ctx)
+        finalContext = autoAdvanceResult.ctx
+        finalResult = autoAdvanceResult.result
+      } else {
+        // Step already has UI - use it
+        finalContext = dispatchResult.ctx
+        finalResult = dispatchResult.output
+      }
+    } else {
+      // No transition - use result as-is
+      finalContext = dispatchResult.ctx
+      finalResult = dispatchResult.output
+    }
+
+    // 6. Save updated context to Redis
+    await saveChatContext(conversationId, finalContext)
+
+    // 7. Respond with ONLY the StepResult output (no full context)
+    // SECURITY: Never send full context to client (leak prevention)
     return NextResponse.json({
-      role: "assistant",
-      content: text,
+      success: true,
+      result: finalResult,
+      // Only send minimal metadata, not full context
+      metadata: {
+        currentStepId: finalContext.currentStepId,
+        messageCount: finalContext.messageCount,
+        hasSession: !!finalContext.session,
+        // Don't expose session details
+      },
+      rateLimit: {
+        remaining: rateLimitResult.remaining,
+        resetAt: rateLimitResult.resetAt,
+      },
     })
   } catch (error) {
-    console.error("[Chat API] Error:", error)
+    logger.error({ error }, "Chat API POST error")
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
+      {
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
+  }
+}
+
+/**
+ * GET endpoint for initializing a new conversation or loading existing one.
+ */
+export async function GET(req: NextRequest) {
+  try {
+    const conversationId = req.nextUrl.searchParams.get("conversationId")
+
+    if (!conversationId) {
+      return NextResponse.json({ error: "conversationId is required" }, { status: 400 })
+    }
+
+    // Load context from Redis (server-authoritative)
+    const context = await loadChatContext(conversationId)
+
+    // Instantiate StepEngine
+    const engine = new StepEngine(stepRegistry)
+
+    // Get initial UI for current step (no input)
+    const dispatchResult = await engine.dispatch(context, undefined)
+
+    // Handle auto-advance if needed
+    let finalResult: StepResult
+    let finalContext: Awaited<ReturnType<typeof loadChatContext>>
+
+    if (dispatchResult.output.nextStepId) {
+      const hasUI =
+        dispatchResult.output.messages?.length || dispatchResult.output.components?.length
+
+      if (!hasUI) {
+        const autoAdvanceResult = await handleAutoAdvance(engine, dispatchResult.ctx)
+        finalContext = autoAdvanceResult.ctx
+        finalResult = autoAdvanceResult.result
+      } else {
+        finalContext = dispatchResult.ctx
+        finalResult = dispatchResult.output
+      }
+    } else {
+      finalContext = dispatchResult.ctx
+      finalResult = dispatchResult.output
+    }
+
+    // Save context to Redis
+    await saveChatContext(conversationId, finalContext)
+
+    // Return only StepResult output (no full context)
+    return NextResponse.json({
+      success: true,
+      result: finalResult,
+      metadata: {
+        currentStepId: finalContext.currentStepId,
+        messageCount: finalContext.messageCount,
+        hasSession: !!finalContext.session,
+      },
+    })
+  } catch (error) {
+    logger.error({ error }, "Chat API POST error")
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     )
   }

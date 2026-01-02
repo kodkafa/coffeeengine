@@ -1,12 +1,14 @@
 // Events API - Query stored events
 
 import { type NextRequest, NextResponse } from "next/server"
+import { getDefaultProviderId } from "@/config/providers"
 import { eventStore } from "@/services/event-store.service"
+import { logger } from "@/lib/logger"
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const providerId = searchParams.get("providerId") || "bmc"
+    const providerId = searchParams.get("providerId") || getDefaultProviderId()
     const eventType = searchParams.get("eventType")
     const email = searchParams.get("email")
     const limit = Number.parseInt(searchParams.get("limit") || "50", 10)
@@ -35,7 +37,7 @@ export async function GET(request: NextRequest) {
       offset,
     })
   } catch (error) {
-    console.error("[EventsAPI] Error:", error)
+    logger.error({ error }, "Events API error")
     return NextResponse.json({ error: "Failed to fetch events", details: String(error) }, { status: 500 })
   }
 }

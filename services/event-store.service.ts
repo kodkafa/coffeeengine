@@ -2,6 +2,7 @@
 
 import { kv } from "@/lib/kv"
 import { config } from "@/config"
+import { logger } from "@/lib/logger"
 import type { NormalizedEvent } from "@/types"
 import { NormalizedEventSchema } from "@/lib/schemas"
 
@@ -64,7 +65,7 @@ export class EventStoreService implements IEventStore {
       await kv.zadd(userListKey, { score: timestamp, member: eventKey })
     }
 
-    console.log(`[EventStore] Stored event: ${eventKey} of type ${validated.eventType}`)
+    logger.debug({ eventKey, eventType: validated.eventType }, "Stored event")
   }
 
   // Retrieve a specific event
@@ -147,7 +148,7 @@ export class EventStoreService implements IEventStore {
           const parsed = typeof data === "object" ? data : JSON.parse(data)
           events.push(NormalizedEventSchema.parse(parsed) as NormalizedEvent)
         } catch (error) {
-          console.error(`[EventStore] Data validation failed for key ${key}:`, error)
+          logger.error({ key, error }, "Data validation failed")
           // Skip corrupted events instead of crashing
         }
       }

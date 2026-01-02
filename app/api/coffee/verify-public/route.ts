@@ -1,8 +1,10 @@
 // Public verification API endpoint for frontend (no auth required)
 // Creates a secure session upon successful verification
 
+import { getDefaultProviderId } from "@/config/providers"
 import { sessionStore } from "@/services/session-store.service"
 import { verificationService } from "@/services/verification.service"
+import { logger } from "@/lib/logger"
 import { randomBytes } from "crypto"
 import { type NextRequest, NextResponse } from "next/server"
 
@@ -10,13 +12,13 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json()
-    const { transactionId, providerId = "bmc", contextId, createSession = true } = body
+    const { transactionId, providerId = getDefaultProviderId(), contextId, createSession = true } = body
 
     if (!transactionId) {
       return NextResponse.json({ error: "Bad Request", message: "transactionId is required" }, { status: 400 })
     }
 
-    console.log(`[VerifyPublicAPI] Verifying transaction: ${transactionId} (provider: ${providerId})`)
+    logger.debug({ providerId }, "Verifying transaction (public)")
 
     // Call verification service
     const result = await verificationService.verify(transactionId, providerId)
@@ -40,7 +42,7 @@ export async function POST(request: NextRequest) {
         expiresAt: 0, // Will be calculated by createSession
       })
 
-      console.log(`[VerifyPublicAPI] Created session: ${sessionId}`)
+      logger.info({ sessionId }, "Created session")
     }
 
     // Return result with optional session ID
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
       { status: 200 },
     )
   } catch (error) {
-    console.error("[VerifyPublicAPI] Error:", error)
+    logger.error({ error }, "Verify public API error")
     return NextResponse.json({ error: "Internal Server Error", message: "Verification failed" }, { status: 500 })
   }
 }

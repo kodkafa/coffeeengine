@@ -317,11 +317,20 @@ Environment variables are configured in Vercel project settings.
 
 ## Documentation
 
-- [Development Guide](./dev-guide.md) - Detailed architecture docs
-- [Implementation Guide](./IMPLEMENTATION_GUIDE.md) - Phase-by-phase breakdown
-- [MCP Setup Guide](./MCP_SETUP.md) - Model Context Protocol configuration
-- [Custom GPT Setup](./docs/CUSTOM_GPT_SETUP.md) - Integration with ChatGPT
-- [Privacy Policy](./app/privacy/page.tsx) - User data handling
+### Setup & Configuration
+- [Implementation Guide](./docs/implementation-guide.md) - Phase-by-phase implementation breakdown
+- [MCP Setup Guide](./docs/mcp-setup.md) - Model Context Protocol configuration
+
+### Integration Guides
+- [Custom GPT Setup](./docs/custom-gpt-setup.md) - Integration with ChatGPT Custom GPTs
+- [Knowledge Base](./docs/knowledge-base.md) - AI agent integration patterns and best practices
+- [Testing Webhooks](./docs/testing-webhooks.md) - Webhook testing and debugging
+
+### Development
+- [Development Guide](./dev-guide.md) - Detailed architecture and development docs
+
+### Legal
+- [Privacy Policy](./app/privacy/page.tsx) - User data handling and privacy
 
 ## Support
 

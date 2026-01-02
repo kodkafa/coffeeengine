@@ -1,8 +1,9 @@
 // Event Router Service - maps (providerId, eventType) to handlers
 
+import { logger } from "@/lib/logger"
 import type { NormalizedEvent } from "@/types"
 
-type EventHandler = (event: NormalizedEvent) => Promise<void>
+export type EventHandler = (event: NormalizedEvent) => Promise<void>
 
 export class EventRouterService {
   private static instance: EventRouterService
@@ -26,7 +27,7 @@ export class EventRouterService {
     const handlers = this.routes.get(key) || []
     handlers.push(handler)
     this.routes.set(key, handlers)
-    console.log(`[EventRouter] Registered handler for ${key}`)
+    logger.debug({ key }, "Registered handler")
   }
 
   async dispatch(event: NormalizedEvent): Promise<void> {
@@ -34,18 +35,18 @@ export class EventRouterService {
     const handlers = this.routes.get(key) || []
 
     if (handlers.length === 0) {
-      console.warn(`[EventRouter] No handlers for ${key}`)
+      logger.warn({ key }, "No handlers for event")
       return
     }
 
-    console.log(`[EventRouter] Dispatching ${key} to ${handlers.length} handler(s)`)
+    logger.debug({ key, handlerCount: handlers.length }, "Dispatching event")
 
     await Promise.all(
       handlers.map(async (handler) => {
         try {
           await handler(event)
         } catch (error) {
-          console.error(`[EventRouter] Handler error for ${key}:`, error)
+          logger.error({ key, error }, "Handler error")
         }
       }),
     )

@@ -1,10 +1,18 @@
 // Provider Registry - manages webhook provider implementations
 
+import { logger } from "@/lib/logger"
 import type { WebhookProvider } from "@/types"
+import type { EventHandler } from "@/services/event-router.service"
+
+export interface ProviderEventMap {
+  event: string
+  handler: EventHandler
+}
 
 export class ProviderRegistryService {
   private static instance: ProviderRegistryService
   private providers: Map<string, WebhookProvider> = new Map()
+  private providerEvents: Map<string, ProviderEventMap[]> = new Map()
 
   private constructor() {}
 
@@ -17,7 +25,16 @@ export class ProviderRegistryService {
 
   register(provider: WebhookProvider): void {
     this.providers.set(provider.providerId, provider)
-    console.log(`[ProviderRegistry] Registered provider: ${provider.providerId}`)
+    logger.debug({ providerId: provider.providerId }, "Registered provider")
+  }
+
+  registerEvents(providerId: string, eventMap: ProviderEventMap[]): void {
+    this.providerEvents.set(providerId, eventMap)
+    logger.debug({ providerId, eventCount: eventMap.length }, "Registered provider events")
+  }
+
+  getEvents(providerId: string): ProviderEventMap[] | undefined {
+    return this.providerEvents.get(providerId)
   }
 
   resolve(providerId: string): WebhookProvider | undefined {

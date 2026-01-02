@@ -46,7 +46,11 @@ server.registerTool(
   },
   async ({ transactionId, providerId = "bmc", contextId }) => {
     try {
-      console.error(`[MCP] Verifying transaction: ${transactionId} for provider: ${providerId}`)
+      // MCP server uses stdio, logger may not work - use console for now
+      // In production, consider redirecting to a log file
+      if (process.env.NODE_ENV === "development") {
+        console.error(`[MCP] Verifying transaction: ${transactionId} for provider: ${providerId}`)
+      }
 
       // Call the verification service
       const result = await verificationService.verify(transactionId, providerId)
@@ -78,7 +82,9 @@ server.registerTool(
         },
       }
     } catch (error) {
-      console.error("[MCP] Error verifying transaction:", error)
+      if (process.env.NODE_ENV === "development") {
+        console.error("[MCP] Error verifying transaction:", error)
+      }
       return {
         content: [
           {
@@ -106,10 +112,12 @@ server.registerResource(
 async function main() {
   const transport = new StdioServerTransport()
   await server.connect(transport)
+  // MCP stdio transport - log to stderr
   console.error("[MCP] Coffee Engine server running on stdio transport")
 }
 
 main().catch((error) => {
+  // MCP fatal error - always log
   console.error("[MCP] Fatal error:", error)
   process.exit(1)
 })

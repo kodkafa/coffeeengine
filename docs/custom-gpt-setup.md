@@ -60,7 +60,7 @@ Buy Me a Coffee link: [Your BMC Link]
 
 ## Step 4: Add Knowledge Base
 
-Upload the `KNOWLEDGE_BASE.md` file to your GPT's knowledge base for detailed integration patterns.
+Upload the `knowledge-base.md` file to your GPT's knowledge base for detailed integration patterns.
 
 ## Step 5: Test Your GPT
 

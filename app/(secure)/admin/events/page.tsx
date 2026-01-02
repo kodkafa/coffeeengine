@@ -40,7 +40,9 @@ export default function AdminEventsPage() {
       const data = await res.json()
       setStats(data)
     } catch (error) {
-      console.error("Failed to load stats:", error)
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to load stats:", error)
+      }
     }
   }
 
@@ -61,7 +63,9 @@ export default function AdminEventsPage() {
       const data = await res.json()
       setEvents(data.events)
     } catch (error) {
-      console.error("Failed to load events:", error)
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to load events:", error)
+      }
     } finally {
       setLoading(false)
     }

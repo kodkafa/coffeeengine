@@ -35,7 +35,13 @@
     "ai_thinking": "AI is thinking...",
     "chat_error": "Chat Error",
     "input_placeholder_verified": "Ask your AI anything...",
-    "input_placeholder_unverified": "Type your message..."
+    "input_placeholder_unverified": "Type your message...",
+    "provider_confirm": "Great! I see you've selected {providerName}. Please complete your support and then paste your Transaction ID below.",
+    "support_retry": [
+      "Please select a payment provider to continue.",
+      "I need you to choose a payment method first.",
+      "Click one of the provider buttons above to proceed."
+    ]
   },
   "faq": [
     {
@@ -70,3 +76,4 @@
     "🔧 Debug my webhook configuration"
   ]
 }
+

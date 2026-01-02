@@ -2,6 +2,7 @@
 
 import { config } from "@/config"
 import { kv } from "@/lib/kv"
+import { logger } from "@/lib/logger"
 import { NormalizedEventSchema } from "@/lib/schemas"
 import type { NormalizedEvent } from "@/types"
 
@@ -38,35 +39,27 @@ export class TokenStoreService implements ITokenStore {
       ex: ttl,
     })
 
-    console.log(`[TokenStore] Stored token: ${key} with TTL: ${ttl}s`)
+    logger.debug({ key, ttl }, "Stored token")
   }
 
   async retrieve(providerId: string, externalId: string): Promise<NormalizedEvent | null> {
     const key = this.getKey(providerId, externalId)
 
-    console.log(`[TokenStore] Attempting to retrieve key: ${key}`)
-
     try {
       const data = await kv.get<string>(key)
 
-      console.log(`[TokenStore] Retrieved data type:`, typeof data)
-      console.log(`[TokenStore] Retrieved data:`, data ? "Found" : "null")
-
       if (!data) {
-        console.log(`[TokenStore] No data found for key: ${key}`)
+        logger.debug({ key }, "No data found")
         return null
       }
 
       if (typeof data === "object") {
-        console.log(`[TokenStore] Data is already an object, validating with schema`)
         return NormalizedEventSchema.parse(data) as NormalizedEvent
       }
-
-      console.log(`[TokenStore] Parsing JSON data`)
       const parsed = JSON.parse(data)
       return NormalizedEventSchema.parse(parsed) as NormalizedEvent
     } catch (error) {
-      console.error(`[TokenStore] Error retrieving/parsing data for key ${key}:`, error)
+      logger.error({ key, error }, "Error retrieving/parsing data")
       throw new Error(
         `[TokenStore] Data validation failed for ${key}: ${error instanceof Error ? error.message : String(error)}`,
       )
@@ -82,7 +75,7 @@ export class TokenStoreService implements ITokenStore {
   async delete(providerId: string, externalId: string): Promise<void> {
     const key = this.getKey(providerId, externalId)
     await kv.del(key)
-    console.log(`[TokenStore] Deleted token: ${key}`)
+    logger.debug({ key }, "Deleted token")
   }
 }
 

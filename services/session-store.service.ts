@@ -2,6 +2,7 @@
 
 import { kv } from "@/lib/kv"
 import { config } from "@/config"
+import { logger } from "@/lib/logger"
 
 export interface UserSession {
   verified: boolean
@@ -54,7 +55,7 @@ export class SessionStoreService implements ISessionStore {
       ex: ttl,
     })
 
-    console.log(`[SessionStore] Created session: ${key} with TTL: ${ttl}s`)
+    logger.debug({ key, ttl }, "Created session")
   }
 
   async getSession(sessionId: string): Promise<UserSession | null> {
@@ -81,7 +82,7 @@ export class SessionStoreService implements ISessionStore {
 
       return parsed
     } catch (error) {
-      console.error(`[SessionStore] Error retrieving session ${key}:`, error)
+      logger.error({ key, error }, "Error retrieving session")
       return null
     }
   }
@@ -104,7 +105,7 @@ export class SessionStoreService implements ISessionStore {
   async deleteSession(sessionId: string): Promise<void> {
     const key = this.getKey(sessionId)
     await kv.del(key)
-    console.log(`[SessionStore] Deleted session: ${key}`)
+    logger.debug({ key }, "Deleted session")
   }
 
   async exists(sessionId: string): Promise<boolean> {

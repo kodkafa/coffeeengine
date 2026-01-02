@@ -52,7 +52,7 @@ class ApiClient {
    *
    * Note: This uses the public endpoint that doesn't require API key headers.
    */
-  async verifyTransaction(transactionId: string, providerId = "bmc", contextId?: string): Promise<VerificationResult> {
+  async verifyTransaction(transactionId: string, providerId?: string, contextId?: string): Promise<VerificationResult> {
     try {
       const response = await fetch(`${this.baseUrl}/api/coffee/verify-public`, {
         method: "POST",
@@ -81,7 +81,10 @@ class ApiClient {
         ok: true,
       }
     } catch (error) {
-      console.error("[ApiClient] Verification error:", error)
+      // Client-side logging - use console for now
+      if (process.env.NODE_ENV === "development") {
+        console.error("[ApiClient] Verification error:", error)
+      }
       return {
         ok: false,
         valid: false,
@@ -104,7 +107,9 @@ class ApiClient {
       const validated = HealthCheckSchema.safeParse(data)
       return validated.success && validated.data.ok
     } catch (error) {
-      console.error("[ApiClient] Health check error:", error)
+      if (process.env.NODE_ENV === "development") {
+        console.error("[ApiClient] Health check error:", error)
+      }
       return false
     }
   }
@@ -123,7 +128,9 @@ class ApiClient {
 
       return await response.json()
     } catch (error) {
-      console.error("[ApiClient] OpenAPI spec error:", error)
+      if (process.env.NODE_ENV === "development") {
+        console.error("[ApiClient] OpenAPI spec error:", error)
+      }
       return null
     }
   }

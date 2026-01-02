@@ -1,5 +1,3 @@
-// Core domain types for Coffee Engine
-
 export interface NormalizedEvent {
   providerId: string
   eventType: string

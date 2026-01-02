@@ -12,14 +12,6 @@ export class ConfigService {
     return ConfigService.instance
   }
 
-  get kvRestApiUrl(): string {
-    return process.env.KV_REST_API_URL || ""
-  }
-
-  get kvRestApiToken(): string {
-    return process.env.KV_REST_API_TOKEN || ""
-  }
-
   get coffeeApiKey(): string {
     return process.env.COFFEE_API_KEY || ""
   }
@@ -58,16 +50,6 @@ export class ConfigService {
 
   get isDevelopment(): boolean {
     return this.nodeEnv === "development"
-  }
-
-  private generateDefaultApiKey(): string {
-    // Generate a random API key for development
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-    let result = "coffee_"
-    for (let i = 0; i < 32; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return result
   }
 
   getProviderSecret(providerId: string): string {
